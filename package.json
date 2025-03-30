@@ -1,15 +1,22 @@
 {
     "name": "prequel",
     "main": "index.ts",
+    "scripts": {
+  "build": "tsc"
+},
     "devDependencies": {
         "@types/commander": "^2.12.0",
         "@types/node": "^18.19.84",
-        "typescript": "^5.0.0"
+        "typescript": "^5.8.2"
     },
     "dependencies": {
+        "@pulumi/azure-native": "^2.90.0",
         "@pulumi/github": "^6.7.0",
         "@pulumi/pulumi": "^3.159.0",
+        "axios": "^1.8.4",
         "commander": "^13.1.0",
-        "dotenv": "^16.4.7"
+        "dotenv": "^16.4.7",
+        "fs": "^0.0.1-security",
+        "mssql": "^11.0.1"
     }
 }
