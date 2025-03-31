@@ -1,5 +1,5 @@
 #!/bin/bash
-
+WEBHOOK_URL=$(pulumi stack output webhookUrl)
 # Test with a mock PR event
 curl -X POST $WEBHOOK_URL \
   -H "Content-Type: application/json" \

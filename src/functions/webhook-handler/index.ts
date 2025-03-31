@@ -41,6 +41,10 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     
     // Validate webhook signature (prevents spoofing)
     // Note: The secret is now obtained from environment variables in validateGitHubSignature
+
+    const rawBody = req.rawBody || JSON.stringify(req.body);
+
+    // Validate webhook signature
     const isValidSignature = await validateGitHubSignature(req.body, signature);
     if (!isValidSignature) {
       context.log.error("Invalid webhook signature");

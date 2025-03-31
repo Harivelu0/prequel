@@ -1,32 +1,42 @@
-// In signature-validator.ts
 import * as crypto from 'crypto';
 
-export async function validateGitHubSignature(payload: string, signature: string): Promise<boolean> {
+export async function validateGitHubSignature(payload: any, signature: string): Promise<boolean> {
   try {
     const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
     
-    console.log('Validation Inputs:');
-    console.log('Payload:', payload);
-    console.log('Webhook Secret:', webhookSecret);
-    console.log('Received Signature:', signature);
-
+    if (!webhookSecret) {
+      console.error('GITHUB_WEBHOOK_SECRET environment variable is not set');
+      return false;
+    }
+    
+    if (!signature) {
+      console.error('Signature is empty or undefined');
+      return false;
+    }
+    
+    console.log('Validating signature...');
+    
+    // Convert payload to string if it's not already
+    const payloadString = typeof payload === 'string' 
+      ? payload 
+      : JSON.stringify(payload);
+    
     // Compute expected signature
-    const computedSignature = crypto
+    const computedHash = crypto
       .createHmac('sha256', webhookSecret)
-      .update(payload)
+      .update(payloadString)
       .digest('hex');
-
-    console.log('Computed Signature:', computedSignature);
-
+    
+    const expectedSignature = `sha256=${computedHash}`;
+    
     // Compare signatures
-    const expectedSignatureHeader = `sha256=${computedSignature}`;
-    const isValid = expectedSignatureHeader === signature;
-
-    console.log('Signature Validation Result:', isValid);
-
+    const isValid = expectedSignature === signature;
+    
+    console.log(`Signature validation result: ${isValid}`);
+    
     return isValid;
   } catch (error) {
-    console.error('Signature Validation Error:', error);
+    console.error('Signature validation error:', error);
     return false;
   }
 }

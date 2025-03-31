@@ -5,21 +5,25 @@ FUNCTION_APP_NAME="prequel-functionee90307a"
 RESOURCE_GROUP_NAME="prequel-rg9a95ed63"
 FUNCTION_ZIP_PATH="function.zip"
 SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-# Use a supported API version
-SUPPORTED_API_VERSION="2024-04-01"
 
-# Recreate deployment package
+# Clean up previous deployment files
+rm -rf deploy
 rm -f function.zip
-mkdir -p deploy/functions
+mkdir -p deploy/webhook
 
-# Copy necessary files
-cp -r dist/functions/webhook-handler/* deploy/functions/
-cp -r dist/functions/analytics deploy/functions/
-cp dist/utils/* deploy/functions/
-cp dist/types/* deploy/functions/
+# Copy webhook handler files - this matches your structure
+cp -r dist/functions/webhook-handler/* deploy/webhook/
 
-# Create function.json
-cat > deploy/functions/function.json << EOL
+# Copy utility files needed by the webhook
+cp dist/utils/* deploy/webhook/
+cp dist/types/* deploy/webhook/
+
+# Copy any other dependencies needed
+mkdir -p deploy/webhook/analytics
+cp -r dist/functions/analytics/* deploy/webhook/analytics/
+
+# Create function.json for webhook
+cat > deploy/webhook/function.json << EOL
 {
   "bindings": [
     {
@@ -38,42 +42,58 @@ cat > deploy/functions/function.json << EOL
 }
 EOL
 
-# Create package.json
-cat > deploy/functions/package.json << EOL
+# Create host.json file
+cat > deploy/host.json << EOL
 {
-  "name": "prequel-webhook-handler",
-  "version": "1.0.0",
-  "main": "index.js",
-  "dependencies": {
-    "@azure/functions": "^4.0.0"
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    },
+    "logLevel": {
+      "default": "Information",
+      "Function": "Verbose"
+    }
+  },
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[4.*, 5.0.0)"
   }
 }
 EOL
 
-# Zip the deployment package
+# Create package.json at root level with dependencies
+cat > deploy/package.json << EOL
+{
+  "name": "prequel-webhook-handler",
+  "version": "1.0.0",
+  "dependencies": {
+    "@azure/functions": "^4.0.0",
+    "mssql": "^9.1.1"
+  }
+}
+EOL
+
+# Create the zip file from the deploy directory
 cd deploy
-zip -r ../function.zip functions
+zip -r ../function.zip *
 cd ..
 
 # Get SQL connection string from Pulumi
 SQL_CONN_STRING=$(pulumi stack output sqlConnectionString)
 
-# Deployment command with verbose output
+# Deploy the zip package
 echo "Deploying function package..."
-deployment_response=$(curl -v -X POST \
-  -H "Authorization: Bearer $(az account get-access-token --query accessToken -o tsv)" \
-  -H "Content-Type: application/octet-stream" \
-  --data-binary "@$FUNCTION_ZIP_PATH" \
-  "https://management.azure.com/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP_NAME/providers/Microsoft.Web/sites/$FUNCTION_APP_NAME/deployzip?api-version=$SUPPORTED_API_VERSION" 2>&1)
+az functionapp deployment source config-zip \
+  --resource-group "$RESOURCE_GROUP_NAME" \
+  --name "$FUNCTION_APP_NAME" \
+  --src "$FUNCTION_ZIP_PATH" \
+  --verbose
 
-# Check deployment response
-if [[ $deployment_response == *"error"* ]]; then
-  echo "Deployment Failed:"
-  echo "$deployment_response"
-  exit 1
-fi
-
-# Configure Function App Settings using az CLI
+# Configure Function App Settings
 echo "Configuring Function App Settings..."
 az functionapp config appsettings set \
   --name "$FUNCTION_APP_NAME" \
@@ -86,21 +106,35 @@ az functionapp config appsettings set \
     "WEBSITE_NODE_DEFAULT_VERSION=~18" \
     "WEBSITE_RUN_FROM_PACKAGE=1"
 
-# Verify Deployment
-echo "Deployment Verification:"
-az functionapp show \
+# Restart the function app
+echo "Restarting function app..."
+az functionapp restart \
   --name "$FUNCTION_APP_NAME" \
   --resource-group "$RESOURCE_GROUP_NAME"
 
-# Additional Diagnostics
-echo -e "\nFunction App Details:"
+# Verify Deployment
+echo "Deployment Verification:"
 az functionapp show \
   --name "$FUNCTION_APP_NAME" \
   --resource-group "$RESOURCE_GROUP_NAME" \
   --query "{name:name, state:state, hostNames:hostNames}"
 
-# Check Application Settings
-echo -e "\nApplication Settings:"
-az functionapp config appsettings list \
+# List functions
+echo -e "\nListing functions:"
+az functionapp function list \
   --name "$FUNCTION_APP_NAME" \
-  --resource-group "$RESOURCE_GROUP_NAME"
+  --resource-group "$RESOURCE_GROUP_NAME" \
+  --output table
+
+echo -e "\nDeployment complete. Check logs for any issues."s
+
+
+FUNCTION_KEY=$(az functionapp function keys list \
+  --name "prequel-functionee90307a" \
+  --resource-group "prequel-rg9a95ed63" \
+  --function-name webhook \
+  --query "default" -o tsv)
+
+az webapp log tail \
+  --name "prequel-functionee90307a" \
+  --resource-group "prequel-rg9a95ed63"

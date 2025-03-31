@@ -8,12 +8,12 @@ const stack = pulumi.getStack();
 
 
 // Add a firewall rule for your client IP
-const clientIpRule = new sql.FirewallRule("allow-my-ip", {
-  resourceGroupName: resourceGroup.name,
-  serverName: sqlServer.name,
-  startIpAddress: "106.208.104.109",  // Your IP address
-  endIpAddress: "106.208.104.109",
-});
+// const clientIpRule = new sql.FirewallRule("allow-my-ip", {
+//   resourceGroupName: resourceGroup.name,
+//   serverName: sqlServer.name,
+//   startIpAddress: "106.208.104.109",  // Your IP address
+//   endIpAddress: "106.208.104.109",
+// });
 export function createDatabase(
   resourceGroupName: string,
   location: string = "East US"
@@ -67,3 +67,37 @@ export function createDatabase(
     connectionString: connectionString,
   };
 }
+// // After creating the database, run a script to create the user
+// const createUserScript = new azure.resources.DeploymentScript("create-sql-user", {
+//   resourceGroupName: resourceGroup.name,
+//   location: location,
+//   kind: "AzureCLI",
+//   azCliVersion: "2.37.0",
+//   retentionInterval: "P1D",
+//   environmentVariables: [
+//       {
+//           name: "RESOURCE_GROUP",
+//           value: resourceGroup.name,
+//       },
+//       {
+//           name: "SERVER_NAME",
+//           value: sqlServer.name,
+//       },
+//       {
+//           name: "DB_NAME",
+//           value: database.name,
+//       },
+//       {
+//           name: "ADMIN_USER",
+//           value: sqlAdminUsername,
+//       },
+//       {
+//           name: "ADMIN_PASSWORD",
+//           secureValue: sqlAdminPassword,
+//       },
+//   ],
+//   scriptContent: `
+//       QUERY="CREATE USER [prequel_admin] WITH PASSWORD = 'YourNewStrongPassword'; ALTER ROLE db_owner ADD MEMBER [prequel_admin];"
+//       az sql db query --resource-group $RESOURCE_GROUP --server $SERVER_NAME --database $DB_NAME --query "$QUERY" --username $ADMIN_USER --password $ADMIN_PASSWORD
+//   `,
+// });

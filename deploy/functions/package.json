@@ -1,8 +1,0 @@
-{
-  "name": "prequel-webhook-handler",
-  "version": "1.0.0",
-  "main": "index.js",
-  "dependencies": {
-    "@azure/functions": "^4.0.0"
-  }
-}
