@@ -1,5 +1,6 @@
 import * as sql from 'mssql';
 import * as logger from '../../utils/logger';
+import { getErrorMessage } from '../../utils/error-helpers';
 
 /**
  * Migration to add indexes to optimize database performance
@@ -77,7 +78,8 @@ export async function up(): Promise<void> {
     
     logger.info("Migration completed: Add indexes");
   } catch (error) {
-    logger.error(`Migration failed: ${error.message}`);
+    logger.error(`Migration failed: ${getErrorMessage(error)} `);
+   
     throw error;
   }
 }
@@ -155,7 +157,7 @@ export async function down(): Promise<void> {
     
     logger.info("Migration rollback completed: Drop indexes");
   } catch (error) {
-    logger.error(`Migration rollback failed: ${error.message}`);
+    logger.error(`Migration rollback failed: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -204,7 +206,7 @@ export async function isApplied(): Promise<boolean> {
     
     return isApplied;
   } catch (error) {
-    logger.error(`Error checking migration status: ${error.message}`);
+    logger.error(`Error checking migration status: ${getErrorMessage(error)}`);
     return false;
   }
 }

@@ -19,9 +19,16 @@ export function info(message: string): void {
   /**
    * Log an error message
    */
-  export function error(message: string): void {
-    console.error(`[ERROR] ${message}`);
+ /**
+ * Log an error message
+ */
+export function error(err: unknown): void {
+  if (err instanceof Error) {
+    console.error(`[ERROR] ${err.message}`);
+  } else {
+    console.error(`[ERROR] ${String(err)}`);
   }
+}
   
   /**
    * Log a debug message

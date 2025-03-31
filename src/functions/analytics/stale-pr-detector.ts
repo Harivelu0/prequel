@@ -2,6 +2,7 @@ import { AzureFunction, Context } from "@azure/functions";
 import { getStalePullRequests } from "../../database/repostories/pr-repostory";
 import { sendStalePRsNotification } from "../../notification/slack-service";
 import * as logger from "../../utils/logger";
+import { getErrorMessage } from '../../utils/error-helpers';
 
 /**
  * Timer-triggered function to check for stale PRs and send notifications
@@ -31,9 +32,8 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
         context.log(`Stale PR: #${pr.number} in ${pr.repository} by ${pr.author} - Open for ${pr.daysOpen} days`);
       }
     }
-  } catch (error) {
-    context.log.error(`Error in stale PR detector: ${error.message}`);
-    logger.error(`Stale PR detector error: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 };

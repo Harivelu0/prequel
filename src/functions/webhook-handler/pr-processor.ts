@@ -1,6 +1,8 @@
 import { Context } from "@azure/functions";
 import * as sql from 'mssql';
 import { sendSlackNotification } from '../../notification/slack-service';
+import * as logger from '../../utils/logger';
+import { getErrorMessage } from '../../utils/error-helpers';
 
 // Database connection
 let dbConnectionPool: sql.ConnectionPool | null = null;
@@ -15,6 +17,40 @@ async function getDbConnection(): Promise<sql.ConnectionPool> {
     dbConnectionPool = await new sql.ConnectionPool(connectionString).connect();
   }
   return dbConnectionPool;
+}
+
+/**
+ * Main entry point for processing GitHub webhook events related to pull requests
+ * This function is called by index.ts
+ */
+export async function processPullRequestEvent(
+  context: Context, 
+  eventType: string, 
+  payload: any
+): Promise<void> {
+  context.log.info(`Processing ${eventType} event`);
+  
+  try {
+    // Based on the event type, delegate to the appropriate handler
+    switch (eventType) {
+      case 'pull_request':
+        await processPREvent(payload, context);
+        break;
+      case 'pull_request_review':
+        await handlePullRequestReviewEvent(await getDbConnection(), payload);
+        break;
+      case 'pull_request_review_comment':
+        await handlePullRequestReviewCommentEvent(await getDbConnection(), payload);
+        break;
+      default:
+        context.log.warn(`Unsupported event type: ${eventType}`);
+    }
+    
+    context.log.info(`Successfully processed ${eventType} event`);
+  } catch (error: unknown) {
+    context.log.error(`Error processing PR event: ${getErrorMessage(error)}`);
+    throw error;
+  }
 }
 
 /**
@@ -49,10 +85,127 @@ export async function processPREvent(payload: any, context: Context): Promise<vo
       default:
         context.log.info(`Ignoring PR action: ${action}`);
     }
-  } catch (error) {
-    context.log.error(`Error processing PR event: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error processing PR event: ${getErrorMessage(error)}`);
     throw error;
   }
+}
+
+/**
+ * Handle pull request review events (added function)
+ */
+async function handlePullRequestReviewEvent(
+  pool: sql.ConnectionPool,
+  payload: any
+): Promise<void> {
+  try {
+    const action = payload.action;
+    const review = payload.review;
+    const pr = payload.pull_request;
+    const repository = payload.repository;
+    
+    logger.info(`Processing PR review ${action} for PR #${pr.number}`);
+    
+    if (action === 'submitted') {
+      // Ensure organization exists
+      const orgId = await ensureOrganization(pool, payload.organization);
+      
+      // Ensure repository exists
+      const repoId = await ensureRepository(pool, repository, orgId);
+      
+      // Ensure team members exist
+      const reviewerId = await ensureTeamMember(pool, review.user, orgId);
+      
+      // Get the PR ID from database
+      const request = pool.request();
+      request.input('repoId', sql.Int, repoId);
+      request.input('prNumber', sql.Int, pr.number);
+      
+      const prResult = await request.query(`
+        SELECT PRId FROM PullRequests 
+        WHERE RepoId = @repoId AND Number = @prNumber
+      `);
+      
+      if (prResult.recordset.length === 0) {
+        throw new Error(`PR #${pr.number} not found in database`);
+      }
+      
+      const prId = prResult.recordset[0].PRId;
+      
+      // Record the review
+      const reviewRequest = pool.request();
+      reviewRequest.input('prId', sql.Int, prId);
+      reviewRequest.input('reviewerId', sql.Int, reviewerId);
+      reviewRequest.input('state', sql.NVarChar, review.state);
+      reviewRequest.input('body', sql.NVarChar, review.body || '');
+      reviewRequest.input('submittedAt', sql.DateTime2, new Date(review.submitted_at));
+      
+      await reviewRequest.query(`
+        INSERT INTO PRReviews (PRId, ReviewerId, State, Body, SubmittedAt)
+        VALUES (@prId, @reviewerId, @state, @body, @submittedAt)
+      `);
+      
+      // Send notification about the review
+      await sendReviewNotification(review, pr, repository);
+      
+      // Update PR metrics
+      await calculatePrMetrics(pool, pr, repository);
+    }
+  } catch (error: unknown) {
+    logger.error(`Error processing PR review: ${getErrorMessage(error)}`);
+    throw error;
+  }
+}
+
+/**
+ * Send a notification about a PR review
+ */
+async function sendReviewNotification(
+  review: any,
+  pr: any,
+  repository: any
+): Promise<void> {
+  // Determine emoji based on review state
+  let stateEmoji = '';
+  let stateText = '';
+  
+  switch (review.state.toUpperCase()) {
+    case 'APPROVED':
+      stateEmoji = '✅';
+      stateText = 'approved';
+      break;
+    case 'CHANGES_REQUESTED':
+      stateEmoji = '❌';
+      stateText = 'requested changes to';
+      break;
+    case 'COMMENTED':
+      stateEmoji = '💬';
+      stateText = 'commented on';
+      break;
+  }
+  
+  const message = `${stateEmoji} *${review.user.login}* ${stateText} <${pr.html_url}|#${pr.number} ${pr.title}> in *${repository.full_name}* by *${pr.user.login}*`;
+  
+  // Send to Slack
+  await sendSlackNotification(message);
+}
+
+/**
+ * Handle pull request review comment events (added function)
+ */
+async function handlePullRequestReviewCommentEvent(
+  pool: sql.ConnectionPool,
+  payload: any
+): Promise<void> {
+  // This is a stub implementation
+  // You can expand it as needed to track PR review comments
+  logger.info(`Received PR review comment: ${payload.action}`);
+  
+  // For now, we'll just log it without storing in DB
+  const comment = payload.comment;
+  const pr = payload.pull_request;
+  
+  logger.info(`PR #${pr.number} comment by ${comment.user.login}: ${comment.body.substring(0, 50)}...`);
 }
 
 /**

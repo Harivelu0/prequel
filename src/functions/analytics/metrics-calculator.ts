@@ -4,7 +4,7 @@ import { updateAllPRMetrics } from "../../database/repostories/metrics-repostory
 import { getWeeklyPRStats } from "../../database/repostories/pr-repostory";
 import { sendWeeklySummary } from "../../notification/slack-service";
 import * as logger from "../../utils/logger";
-
+import { getErrorMessage } from '../../utils/error-helpers';
 /**
  * Timer-triggered function to calculate PR metrics and generate reports
  */
@@ -37,9 +37,9 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
       
       context.log('Weekly PR report sent successfully');
     }
-  } catch (error) {
-    context.log.error(`Error in metrics calculator: ${error.message}`);
-    logger.error(`Metrics calculator error: ${error.message}`);
+  } catch (error: unknown) {
+    
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 };
@@ -102,9 +102,10 @@ async function exportMetricsToStorage(context: Context): Promise<void> {
     const fileName = `metrics-${metricsData.Date}.json`;
     
     context.log(`Metrics exported to storage as: ${fileName}`);
-  } catch (error) {
-    context.log.error(`Error exporting metrics to storage: ${error.message}`);
-    logger.error(`Error exporting metrics to storage: ${error.message}`);
+  } catch (error: unknown) {
+    
+    logger.error(`Error message: ${getErrorMessage(error)}`);
+    throw error;
   }
 }
 

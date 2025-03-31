@@ -4,6 +4,8 @@ import * as azure from "@pulumi/azure-native";
 import * as logger from "../utils/logger";
 import { GitHubProvider } from "../pulumi/github-provider";
 
+import { getErrorMessage } from '../utils/error-helpers';
+
 /**
  * Creates and manages webhooks across multiple repositories
  */
@@ -33,7 +35,7 @@ export class WebhookManager {
       const repos = await this.githubProvider.getOrganizationRepositories(organizationName);
       
       // Filter out excluded repositories
-      const filteredRepos = repos.filter(repo => !excludeRepos.includes(repo.name));
+      const filteredRepos = repos.filter((repo: any) => !excludeRepos.includes(repo.name));
       
       logger.info(`Found ${filteredRepos.length} repositories to configure`);
       
@@ -47,8 +49,9 @@ export class WebhookManager {
       }
       
       logger.info(`Successfully set up webhooks for all repositories`);
-    } catch (error) {
-      logger.error(`Error setting up organization webhooks: ${error.message}`);
+    } catch (error: unknown) {
+      
+      logger.error(`Error message: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -96,8 +99,9 @@ export class WebhookManager {
       
       logger.info(`Webhook for ${fullRepoName} created successfully`);
       return webhook;
-    } catch (error) {
-      logger.error(`Error setting up webhook for ${ownerName}/${repoName}: ${error.message}`);
+    } catch (error: unknown) {
+      
+      logger.error(`Error message: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -155,8 +159,9 @@ export class WebhookManager {
       this.webhooks.set(fullRepoName, webhook);
       
       logger.info(`Webhook for ${fullRepoName} updated successfully`);
-    } catch (error) {
-      logger.error(`Error updating webhook for ${ownerName}/${repoName}: ${error.message}`);
+    } catch (error: unknown) {
+      
+      logger.error(`Error message: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -182,8 +187,9 @@ export class WebhookManager {
       this.webhooks.delete(fullRepoName);
       
       logger.info(`Webhook for ${fullRepoName} deleted successfully`);
-    } catch (error) {
-      logger.error(`Error deleting webhook for ${ownerName}/${repoName}: ${error.message}`);
+    } catch (error: unknown) {
+     
+      logger.error(`Error message: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -234,12 +240,11 @@ export class WebhookManager {
         success: errors.length === 0,
         errors
       };
-    } catch (error) {
-      logger.error(`Error validating webhooks: ${error.message}`);
-      return {
-        success: false,
-        errors: [error.message]
-      };
+    } 
+    catch (error: unknown) {
+     
+      logger.error(`Error message: ${getErrorMessage(error)}`);
+      throw error;
     }
   }
 }

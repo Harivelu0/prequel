@@ -2,10 +2,12 @@
     "name": "prequel",
     "main": "index.ts",
     "scripts": {
-  "build": "tsc"
-},
+        "build": "node --max-old-space-size=4096 ./node_modules/.bin/tsc"
+    },
     "devDependencies": {
+        "@azure/functions": "^4.7.0",
         "@types/commander": "^2.12.0",
+        "@types/mssql": "^9.1.7",
         "@types/node": "^18.19.84",
         "typescript": "^5.8.2"
     },

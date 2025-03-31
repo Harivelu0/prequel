@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as logger from '../utils/logger';
+import { getErrorMessage } from '../utils/error-helpers';
 
 /**
  * Send a notification to Slack
@@ -29,9 +30,9 @@ export async function sendSlackNotification(
     await axios.post(webhookUrl, payload);
     
     logger.info(`Slack notification sent: ${message.substring(0, 50)}...`);
-  } catch (error) {
-    logger.error(`Error sending Slack notification: ${error.message}`);
-    // Don't rethrow, we don't want to fail if notifications fail
+  } catch (error: unknown) {
+    logger.error(`Error message: ${getErrorMessage(error)}`);
+    throw error;
   }
 }
 
@@ -64,7 +65,8 @@ export async function sendRichSlackNotification(
     
     logger.info("Rich Slack notification sent");
   } catch (error) {
-    logger.error(`Error sending rich Slack notification: ${error.message}`);
+    logger.error(`Error sending rich Slack notification: ${getErrorMessage(error)}`);
+
     // Don't rethrow, we don't want to fail if notifications fail
   }
 }

@@ -1,76 +1,77 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
+import { processPullRequestEvent } from "./pr-processor";
 import { validateGitHubSignature } from "./signature-validator";
-import { processPREvent } from "./pr-processor";
+import * as logger from "../../utils/logger";
+import { getErrorMessage } from "../../utils/error-helpers";
 
+/**
+ * Webhook handler for GitHub events
+ */
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-  context.log("GitHub Webhook triggered");
-
+  context.log.info("Processing GitHub webhook");
+  
   try {
-    // Get GitHub event type from headers
-    const githubEvent = req.headers["x-github-event"];
-    const signature = req.headers["x-hub-signature-256"];
-    const deliveryId = req.headers["x-github-delivery"];
-
-    // Validate webhook signature
-    const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
-    
-    if (!webhookSecret) {
-      context.log.error("GitHub webhook secret is not configured");
+    // Validate that this is a GitHub webhook
+    if (!req.body) {
+      context.log.error("No request body provided");
       context.res = {
-        status: 500,
-        body: "Server configuration error"
+        status: 400,
+        body: "No request body provided"
       };
       return;
     }
-
-    if (!signature || !validateGitHubSignature(req.body, signature, webhookSecret)) {
-      context.log.error("Invalid GitHub signature");
+    
+    // Get GitHub webhook headers
+    const githubEvent = req.headers.get("x-github-event");
+    const signature = req.headers.get("x-hub-signature-256");
+    const deliveryId = req.headers.get("x-github-delivery");
+    
+    // Log the event for debugging
+    context.log.info(`Received GitHub event: ${githubEvent}, delivery ID: ${deliveryId}`);
+    
+    // Validate required headers
+    if (!githubEvent || !signature || !deliveryId) {
+      context.log.error("Missing required GitHub webhook headers");
+      context.res = {
+        status: 400,
+        body: "Missing required GitHub webhook headers"
+      };
+      return;
+    }
+    
+    // Validate webhook signature (prevents spoofing)
+    // Note: The secret is now obtained from environment variables in validateGitHubSignature
+    const isValidSignature = await validateGitHubSignature(req.body, signature);
+    if (!isValidSignature) {
+      context.log.error("Invalid webhook signature");
       context.res = {
         status: 401,
-        body: "Invalid signature"
+        body: "Invalid webhook signature"
       };
       return;
     }
-
-    // Log event details
-    context.log(`Processing GitHub event: ${githubEvent}, delivery ID: ${deliveryId}`);
-
-    // Handle different event types
-    if (githubEvent === "pull_request") {
-      await processPREvent(req.body, context);
-    } else if (githubEvent === "pull_request_review") {
-      await processPRReviewEvent(req.body, context);
+    
+    // Process based on event type
+    if (githubEvent === "pull_request" || 
+        githubEvent === "pull_request_review" || 
+        githubEvent === "pull_request_review_comment") {
+      await processPullRequestEvent(context, githubEvent, req.body);
     } else {
       context.log.info(`Ignoring unsupported event type: ${githubEvent}`);
     }
-
-    // Send success response
+    
+    // Return success
     context.res = {
       status: 200,
-      body: "Event processed successfully"
+      body: "Webhook processed successfully"
     };
-  } catch (error) {
-    context.log.error(`Error processing webhook: ${error.message}`);
+  } catch (error: unknown) {
+    context.log.error(`Error processing webhook: ${getErrorMessage(error)}`);
     context.res = {
       status: 500,
-      body: `Error processing webhook: ${error.message}`
+      body: `Error processing webhook: ${getErrorMessage(error)}`
     };
   }
 };
-
-// Handler for PR review events
-async function processPRReviewEvent(payload: any, context: Context): Promise<void> {
-  const action = payload.action;
-  const pr = payload.pull_request;
-  const review = payload.review;
-  const repository = payload.repository;
-
-  context.log(`PR Review event: ${action} on PR #${pr.number} in ${repository.full_name}`);
-
-  // Store review data in the database
-  // This will be implemented in pr-processor.ts
-  // For now, we just log it
-  context.log(`Review state: ${review.state} by ${review.user.login}`);
-}
 
 export default httpTrigger;

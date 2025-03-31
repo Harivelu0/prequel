@@ -2,11 +2,18 @@ import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure-native";
 import { createFunctionApp } from "../azure/function-app";
 import { createDatabase } from "../azure/database";
-import { deployer } from "../automation/deployer";
-import {logger} from "../utils/logger"
+import { deployRepositoryConfig, deployMultipleRepositories } from "../automation/deployer";
+import * as logger from '../utils/logger';
+import { getErrorMessage } from '../utils/error-helpers';
+
 /**
  * Deploys the Azure infrastructure and updates GitHub webhook configurations
  */
+
+const deployer = {
+  deployRepositoryConfig,
+  deployMultipleRepositories
+};
 export async function deployInfrastructure(
   organizationName: string,
   repositoryNames: string[]
@@ -68,8 +75,9 @@ export async function deployInfrastructure(
       resourceGroupName: resourceGroupName,
       functionAppName: functionApp.name.get(),
     };
-  } catch (error) {
-    logger.error(`Deployment failed: ${error.message}`);
+  } catch (error: unknown) {
+    
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -77,6 +85,8 @@ export async function deployInfrastructure(
 /**
  * Configures GitHub repositories with webhooks
  */
+// Replace the section in configureGitHubRepositories with this corrected code:
+
 async function configureGitHubRepositories(
   organizationName: string,
   repositoryNames: string[],
@@ -90,8 +100,8 @@ async function configureGitHubRepositories(
     const webhookSecret = config.requireSecret("githubWebhookSecret");
     
     // Create config for each repository
-    for (const repoName of repositoryNames) {
-      const fullRepoName = `${organizationName}/${repoName}`;
+    for (const repositoryName of repositoryNames) {
+      const fullRepoName = `${organizationName}/${repositoryName}`;
       
       logger.info(`Configuring repository: ${fullRepoName}`);
       
@@ -111,22 +121,24 @@ async function configureGitHubRepositories(
       ];
       
       // Deploy repository configuration using the deployer from Phase 1
-      await deployer.deployRepositoryConfig({
-        repositoryName: fullRepoName,
-        webhookConfig: webhookConfig,
-        webhookEvents: events,
-        branchProtection: {
-          requirePullRequestReviews: true,
-          requiredApprovingReviewCount: 1,
-          dismissStaleReviews: true,
-          requireLastPushApproval: true,
-        }
+      pulumi.all([webhookUrl, webhookSecret]).apply(([resolvedUrl, resolvedSecret]) => {
+        return deployer.deployRepositoryConfig({
+          name: repositoryName,
+          organization: organizationName,
+          description: `PR monitoring for ${organizationName}/${repositoryName}`,
+          visibility: 'private',
+          defaultBranch: 'main',
+          webhookUrl: resolvedUrl,
+          webhookSecret: resolvedSecret,
+          requiredApprovals: 1,
+          allowSelfApprovals: false
+        });
       });
     }
     
     logger.info(`Successfully configured ${repositoryNames.length} repositories`);
-  } catch (error) {
-    logger.error(`Repository configuration failed: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -159,8 +171,9 @@ export async function deployPRMonitoring(
     await setupScheduledTasks(functionAppName, resourceGroupName);
     
     logger.info(`PR monitoring deployment completed successfully`);
-  } catch (error) {
-    logger.error(`PR monitoring deployment failed: ${error.message}`);
+  } catch (error: unknown) {
+    
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -188,7 +201,7 @@ async function setupScheduledTasks(
     const stalePRSchedule = new azure.web.WebAppFunction("stale-pr-detector", {
       name: "stale-pr-detector",
       resourceGroupName: resourceGroupName,
-      functionAppName: functionAppName,
+      functionName: functionAppName,
       config: {
         bindings: [
           {
@@ -206,7 +219,7 @@ async function setupScheduledTasks(
     const weeklyReportSchedule = new azure.web.WebAppFunction("weekly-report", {
       name: "weekly-report",
       resourceGroupName: resourceGroupName,
-      functionAppName: functionAppName,
+      functionName: functionAppName,
       config: {
         bindings: [
           {
@@ -221,8 +234,9 @@ async function setupScheduledTasks(
     });
     
     logger.info(`Scheduled tasks set up successfully`);
-  } catch (error) {
-    logger.error(`Setting up scheduled tasks failed: ${error.message}`);
+  } catch (error: unknown) {
+    
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 }

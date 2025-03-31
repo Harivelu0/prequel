@@ -1,6 +1,7 @@
 import * as sql from 'mssql';
 import * as logger from '../../utils/logger';
 import { createTablesScript } from '../schema';
+import { getErrorMessage } from '../../utils/error-helpers';
 
 /**
  * Migration to create initial database tables
@@ -44,8 +45,8 @@ export async function up(): Promise<void> {
     await pool.close();
     
     logger.info("Migration completed: Create tables");
-  } catch (error) {
-    logger.error(`Migration failed: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Migration failed: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -94,7 +95,7 @@ export async function down(): Promise<void> {
     
     logger.info("Migration rollback completed: Drop tables");
   } catch (error) {
-    logger.error(`Migration rollback failed: ${error.message}`);
+    logger.error(`Migration rollback failed: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -142,8 +143,8 @@ export async function isApplied(): Promise<boolean> {
     await pool.close();
     
     return isApplied;
-  } catch (error) {
-    logger.error(`Error checking migration status: ${error.message}`);
-    return false;
+  } catch (error: unknown) {
+    logger.error(`Migration failed: ${getErrorMessage(error)}`);
+    throw error;
   }
 }

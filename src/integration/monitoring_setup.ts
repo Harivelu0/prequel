@@ -2,19 +2,21 @@ import * as pulumi from "@pulumi/pulumi";
 import * as logger from "../utils/logger";
 import { WebhookManager } from "./webhook_magaer";
 import { deployPRMonitoring } from "./config_deployer";
-
+import { getErrorMessage } from '../utils/error-helpers';
 /**
  * Class that handles the setup of PR monitoring
  */
 export class MonitoringSetup {
   private webhookManager: WebhookManager;
   private config: pulumi.Config;
-
+  private _webhookUrl: string = '';
   constructor() {
     this.webhookManager = new WebhookManager();
     this.config = new pulumi.Config();
   }
-
+  public get webhookUrl(): string {
+    return this._webhookUrl;
+  }
   /**
    * Sets up PR monitoring for an organization
    */
@@ -71,8 +73,9 @@ export class MonitoringSetup {
       );
       
       logger.info(`PR monitoring setup completed for organization: ${organizationName}`);
-    } catch (error) {
-      logger.error(`Error setting up PR monitoring: ${error.message}`);
+    } catch (error: unknown) {
+
+      logger.error(`Error message: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -96,8 +99,8 @@ export class MonitoringSetup {
       
       logger.info(`Found ${filteredRepos.length} repositories`);
       return filteredRepos;
-    } catch (error) {
-      logger.error(`Error getting repository names: ${error.message}`);
+    } catch (error: unknown) {
+      logger.error(`Error message: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -118,8 +121,8 @@ export class MonitoringSetup {
       
       logger.info(`Retrieved webhook URL: ${webhookUrl}`);
       return webhookUrl;
-    } catch (error) {
-      logger.error(`Error getting webhook URL: ${error.message}`);
+    } catch (error: unknown) {
+      logger.error(`Error message: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -127,30 +130,33 @@ export class MonitoringSetup {
   /**
    * Updates monitoring setup with a new webhook URL
    */
-  async updateWebhookUrl(
-    organizationName: string,
-    newWebhookUrl: string,
-    excludeRepos: string[] = []
-  ): Promise<void> {
-    try {
-      logger.info(`Updating webhook URL for organization: ${organizationName}`);
-      
-      // Update config
-      this.config.set("webhookUrl", newWebhookUrl);
-      
-      // Update all webhooks
-      await this.webhookManager.setupOrganizationWebhooks(
-        organizationName,
-        newWebhookUrl,
-        excludeRepos
-      );
-      
-      logger.info(`Webhook URL updated successfully`);
-    } catch (error) {
-      logger.error(`Error updating webhook URL: ${error.message}`);
-      throw error;
-    }
+/**
+ * Updates monitoring setup with a new webhook URL
+ */
+async updateWebhookUrl(
+  organizationName: string,
+  newWebhookUrl: string,
+  excludeRepos: string[] = []
+): Promise<void> {
+  try {
+    logger.info(`Updating webhook URL for organization: ${organizationName}`);
+    
+    // Update config
+    this._webhookUrl = newWebhookUrl;
+    
+    // Update all webhooks
+    await this.webhookManager.setupOrganizationWebhooks(
+      organizationName,
+      newWebhookUrl,
+      excludeRepos
+    );
+    
+    logger.info(`Webhook URL updated successfully`);
+  } catch (error: unknown) {
+    logger.error(`Error updating webhook URL: ${getErrorMessage(error)}`);
+    throw error;
   }
+}
 
   /**
    * Adds monitoring to a single repository
@@ -173,8 +179,9 @@ export class MonitoringSetup {
       );
       
       logger.info(`PR monitoring added for repository: ${ownerName}/${repoName}`);
-    } catch (error) {
-      logger.error(`Error adding repository monitoring: ${error.message}`);
+    } catch (error: unknown) {
+      
+      logger.error(`Error message: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -196,8 +203,9 @@ export class MonitoringSetup {
       );
       
       logger.info(`PR monitoring removed for repository: ${ownerName}/${repoName}`);
-    } catch (error) {
-      logger.error(`Error removing repository monitoring: ${error.message}`);
+    } catch (error: unknown) {
+      
+      logger.error(`Error message: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -222,12 +230,11 @@ export class MonitoringSetup {
       logger.info(`PR monitoring validation ${webhookValidation.success ? 'passed' : 'failed'}`);
       
       return webhookValidation;
-    } catch (error) {
-      logger.error(`Error validating monitoring: ${.message}`);
-      return {
-        success: false,
-        errors: [error.message]
-      };
+    } catch (error: unknown) {
+      
+      logger.error(`Error message: ${getErrorMessage(error)}`);
+      throw error;
+    }
     }
   }
-}
+ 

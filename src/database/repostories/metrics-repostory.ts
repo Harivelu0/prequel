@@ -1,5 +1,6 @@
 import * as sql from 'mssql';
 import * as logger from '../../utils/logger';
+import { getErrorMessage } from '../../utils/error-helpers';
 
 // Database connection
 let dbConnectionPool: sql.ConnectionPool | null = null;
@@ -51,8 +52,8 @@ export async function updateAllPRMetrics(): Promise<void> {
     `);
     
     logger.info('PR metrics updated successfully');
-  } catch (error) {
-    logger.error(`Error updating PR metrics: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error updating PR metrics: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -161,19 +162,20 @@ export async function getOrganizationMetrics(orgName: string): Promise<any> {
           ? metrics.AvgReviewers.toFixed(1) 
           : '0'
       },
-      topRepositories: reposResult.recordset.map(r => ({
+      topRepositories: reposResult.recordset.map((r: { RepoName: string, PRCount: number }) => ({
+        id: r.RepoName,  // Using RepoName as id since there's no explicit id
         name: r.RepoName,
         prCount: r.PRCount
       })),
-      topContributors: membersResult.recordset.map(m => ({
+      topContributors: membersResult.recordset.map((m: { Username: string, PRsCreated: number, PRsReviewed: number, TotalActivity: number }) => ({
         username: m.Username,
         prsCreated: m.PRsCreated,
         prsReviewed: m.PRsReviewed,
         totalActivity: m.TotalActivity
       }))
     };
-  } catch (error) {
-    logger.error(`Error getting organization metrics: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error getting organization metrics: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -238,17 +240,17 @@ export async function getPRTrends(orgName: string, timespan: 'week' | 'month' = 
     return {
       organization: orgName,
       timespan,
-      created: creationResult.recordset.map(r => ({
+      created: creationResult.recordset.map((r: { TimePeriod: string, Count: number }) => ({
         period: r.TimePeriod,
         count: r.Count
       })),
-      merged: mergeResult.recordset.map(r => ({
+      merged: mergeResult.recordset.map((r: { TimePeriod: string, Count: number }) => ({
         period: r.TimePeriod,
         count: r.Count
       }))
     };
-  } catch (error) {
-    logger.error(`Error getting PR trends: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error getting PR trends: ${getErrorMessage(error)}`);
     throw error;
   }
 }

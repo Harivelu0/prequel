@@ -1,7 +1,7 @@
 import * as sql from 'mssql';
 import * as logger from '../../utils/logger';
 import { PullRequest, PRReview } from '../schema';
-
+import { getErrorMessage } from '../../utils/error-helpers';
 // Database connection
 let dbConnectionPool: sql.ConnectionPool | null = null;
 
@@ -38,8 +38,8 @@ export async function getOpenPullRequests(): Promise<PullRequest[]> {
     `);
     
     return result.recordset;
-  } catch (error) {
-    logger.error(`Error getting open pull requests: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error updating PR metrics: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -71,7 +71,7 @@ export async function getStalePullRequests(): Promise<any[]> {
     `);
     
     // Format the results for easier consumption
-    return result.recordset.map(pr => ({
+    return result.recordset.map((pr: any) => ({
       id: pr.PRId,
       number: pr.Number,
       title: pr.Title,
@@ -81,8 +81,8 @@ export async function getStalePullRequests(): Promise<any[]> {
       daysOpen: pr.DaysOpen,
       createdAt: pr.CreatedAt
     }));
-  } catch (error) {
-    logger.error(`Error getting stale pull requests: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error updating PR metrics: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -107,8 +107,8 @@ export async function addPRReview(review: PRReview): Promise<number> {
     `);
     
     return result.recordset[0].ReviewId;
-  } catch (error) {
-    logger.error(`Error adding PR review: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error updating PR metrics: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -209,15 +209,15 @@ export async function getWeeklyPRStats(): Promise<any> {
       merged: mergedResult.recordset[0].Count,
       closed: closedResult.recordset[0].Count,
       open: openResult.recordset[0].Count,
-      topContributors: contributorsResult.recordset.map(c => ({
+      topContributors: contributorsResult.recordset.map((c: any) => ({
         name: c.Username,
         prsCreated: c.PRsCreated,
         prsReviewed: c.PRsReviewed,
         totalActivity: c.TotalActivity
       }))
     };
-  } catch (error) {
-    logger.error(`Error getting weekly PR stats: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error updating PR metrics: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -272,8 +272,8 @@ export async function getRepositoryPRMetrics(repoName: string, orgName: string):
         ? ((metrics.StaleCount / metrics.TotalPRs) * 100).toFixed(1) + '%' 
         : '0%'
     };
-  } catch (error) {
-    logger.error(`Error getting repository PR metrics: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error updating PR metrics: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -347,8 +347,8 @@ export async function getUserPRMetrics(username: string): Promise<any> {
           : '0'
       }
     };
-  } catch (error) {
-    logger.error(`Error getting user PR metrics: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error updating PR metrics: ${getErrorMessage(error)}`);
     throw error;
   }
 }

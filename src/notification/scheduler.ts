@@ -8,6 +8,7 @@ import {
   sendWeeklySummary 
 } from "./slack-service";
 import * as logger from "../utils/logger";
+import { getErrorMessage } from '../utils/error-helpers';
 
 /**
  * Notification types that can be scheduled
@@ -35,8 +36,9 @@ export async function scheduleNotification(
     await sendNotification(type, organizationName, options);
     
     logger.info(`Notification sent: ${type}`);
-  } catch (error) {
-    logger.error(`Error scheduling notification: ${error.message}`);
+  } catch (error: unknown) {
+   
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -71,8 +73,8 @@ async function sendNotification(
     }
     
     logger.info(`Notification sent successfully: ${type}`);
-  } catch (error) {
-    logger.error(`Error sending notification: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -94,8 +96,8 @@ async function sendStalePRsNotification_(organizationName?: string): Promise<voi
     await sendStalePRsNotification(stalePRs);
     
     logger.info(`Sent notification for ${stalePRs.length} stale PRs`);
-  } catch (error) {
-    logger.error(`Error sending stale PRs notification: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -112,8 +114,9 @@ async function sendWeeklySummary_(organizationName?: string): Promise<void> {
     await sendWeeklySummary(weeklyStats);
     
     logger.info('Sent weekly PR summary');
-  } catch (error) {
-    logger.error(`Error sending weekly summary: ${error.message}`);
+  } catch (error: unknown) {
+    
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -141,8 +144,8 @@ async function sendDailySummary_(organizationName?: string): Promise<void> {
     await sendSlackNotification(`${message}\n${content}`);
     
     logger.info('Sent daily PR summary');
-  } catch (error) {
-    logger.error(`Error sending daily summary: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -208,7 +211,7 @@ async function sendOrganizationMetrics_(organizationName?: string): Promise<void
     ];
     
     // Add top repositories
-    metrics.topRepositories.forEach(repo => {
+    metrics.topRepositories.forEach((repo: any) => {
       blocks.push({
         type: "section",
         text: {
@@ -232,7 +235,7 @@ async function sendOrganizationMetrics_(organizationName?: string): Promise<void
       }
     );
     
-    metrics.topContributors.forEach(contributor => {
+    metrics.topContributors.forEach((contributor: any) => {
       blocks.push({
         type: "section",
         text: {
@@ -246,8 +249,9 @@ async function sendOrganizationMetrics_(organizationName?: string): Promise<void
     await sendRichSlackNotification(blocks);
     
     logger.info(`Sent organization metrics for: ${organizationName}`);
-  } catch (error) {
-    logger.error(`Error sending organization metrics: ${error.message}`);
+  } catch (error: unknown) {
+    
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -298,9 +302,8 @@ export const scheduledNotifications: AzureFunction = async function (context: Co
     }
     
     context.log('Notification scheduler completed successfully');
-  } catch (error) {
-    context.log.error(`Error in notification scheduler: ${error.message}`);
-    logger.error(`Notification scheduler error: ${error.message}`);
+  } catch (error: unknown) {
+    logger.error(`Error message: ${getErrorMessage(error)}`);
     throw error;
   }
 };
