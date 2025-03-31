@@ -1,15 +1,15 @@
 config:
   azure-native:clientId: a31cc29f-2efb-47e7-8871-63e15650fb9d
   azure-native:clientSecret:
-    secure: AAABAAdv6gORaRMq5m8kNok6SEab1FVVUYWqeCsfN4PATLiwbXGJyyQ1gsNBxW+V+g9gZh/AmxL+eqmOQdk4PfCq/uTKTrLJ
+    secure: AAABANTLhVyraMjE0eAOtkR/D4BjfOHYcMle0Vl2tAeXynj9IbxW/tHdzpSKz5xLquvflE9yRNPTyHWSaheCZqvuqCRUmDkK
   azure-native:tenantId: a5bd300c-c3b3-41d8-87e0-1f5c8d364af3
   azure-native:subscriptionId: 98c61d81-12c6-4aa2-8ac6-8dc7b8f5e834
   prequel:githubWebhookSecret:
-    secure: AAABACMD4+XxBBFsre1BgkQ5/7MIOEAT3rwop/ZnELEbYE8JBtSrAVA+rShL0pmJwwzwoYcpEee3mj2lymXlFNF+I5ouE6L6
+    secure: AAABAJYKFjaoQfyt9TkBg0w30KYh8bU83tWg2qlrdAPAM1sJWL08kfvEHZ2Jj8FRknNb8bAOkGUdjn4zfL0rTGHgAO3dTrM9
   prequel:slackWebhookUrl:
-    secure: AAABACPjv1IlIjq1akIGfGUmms8CvAoraGO4N0FZBqUppSBDL6Iu8A9W7+TugoqV/naF3m8XJx97sTKLGVdXq2Zpx3HK5FhAaWxg6rI49l1Uwz6irI+5pyEH+yaMHi9PsioSQl9po/zfOpAbTQc+jf8=
+    secure: AAABACf9j0LvhR3iiWkBMKkPBm2JXCx3edpsXNGP0z1fBHCeOzda5/wmID5B0ffjKdQIYg3GT01CBmJWkjVj4o6pkymNC128WmX9tWRowjaTYJrdFAzy28fcluOqtAg1ak0yLQ0FsmSUVgv3F1vBxlk=
   prequel:sqlAdminUsername: prequel_admin
   prequel:sqlAdminPassword:
-    secure: AAABADI03XVZzeqNv3EXb0vkAyjadMsviFZuQ00/Z4UXid3dqv3DyojwgSildT2ffsYyPLNmEDM=
+    secure: AAABAKPsWtJWqgM664r3J73C/fzD55QPxh+7vuDEf/hY4wqikUayV585ZF50L6r4K1AjM/C2+1eYlpF7353BGSGNbcXbRfXCw/WlGAca
   prequel:location: East US
   prequel:organizationName: Shetchuko

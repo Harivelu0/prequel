@@ -6,6 +6,14 @@ import * as sql from "@pulumi/azure-native/sql";
 const config = new pulumi.Config();
 const stack = pulumi.getStack();
 
+
+// Add a firewall rule for your client IP
+const clientIpRule = new sql.FirewallRule("allow-my-ip", {
+  resourceGroupName: resourceGroup.name,
+  serverName: sqlServer.name,
+  startIpAddress: "106.208.104.109",  // Your IP address
+  endIpAddress: "106.208.104.109",
+});
 export function createDatabase(
   resourceGroupName: string,
   location: string = "East US"

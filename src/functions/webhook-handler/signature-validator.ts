@@ -1,45 +1,32 @@
+// In signature-validator.ts
 import * as crypto from 'crypto';
-import * as logger from '../../utils/logger';
-import { getErrorMessage } from '../../utils/error-helpers';
 
-/**
- * Validates GitHub webhook signature to prevent spoofing
- * 
- * Note: This version gets the secret from environment variables
- * instead of requiring it as a parameter
- */
-export async function validateGitHubSignature(
-  payload: any, 
-  signature: string
-): Promise<boolean> {
+export async function validateGitHubSignature(payload: string, signature: string): Promise<boolean> {
   try {
-    // Get webhook secret from environment variables
-    const secret = process.env.GITHUB_WEBHOOK_SECRET;
-    if (!secret) {
-      logger.error("GITHUB_WEBHOOK_SECRET environment variable not set");
-      return false;
-    }
+    const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
     
-    // Convert payload to string if it's not already
-    const payloadString = typeof payload === 'string' 
-      ? payload 
-      : JSON.stringify(payload);
-    
-    // Create HMAC
-    const hmac = crypto.createHmac('sha256', secret);
-    hmac.update(payloadString);
-    
-    // Get digest
-    const digest = `sha256=${hmac.digest('hex')}`;
-    
-    // Compare signatures using timing-safe comparison
-    // This helps prevent timing attacks
-    return crypto.timingSafeEqual(
-      Buffer.from(digest),
-      Buffer.from(signature)
-    );
-  } catch (error: unknown) {
-    logger.error(`Error validating GitHub signature: ${getErrorMessage(error)}`);
+    console.log('Validation Inputs:');
+    console.log('Payload:', payload);
+    console.log('Webhook Secret:', webhookSecret);
+    console.log('Received Signature:', signature);
+
+    // Compute expected signature
+    const computedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(payload)
+      .digest('hex');
+
+    console.log('Computed Signature:', computedSignature);
+
+    // Compare signatures
+    const expectedSignatureHeader = `sha256=${computedSignature}`;
+    const isValid = expectedSignatureHeader === signature;
+
+    console.log('Signature Validation Result:', isValid);
+
+    return isValid;
+  } catch (error) {
+    console.error('Signature Validation Error:', error);
     return false;
   }
 }

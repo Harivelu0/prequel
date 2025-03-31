@@ -1,0 +1,9 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+      "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+      "FUNCTIONS_WORKER_RUNTIME": "node",
+      "GITHUB_WEBHOOK_SECRET": "your-secret-here",
+      "SLACK_WEBHOOK_URL": "your-slack-webhook-url"
+    }
+  }
