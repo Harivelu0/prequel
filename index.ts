@@ -47,7 +47,7 @@ const appServicePlan = new azure.web.AppServicePlan("prequel-plan", {
 });
 
 // Create Function App
-const functionApp = new azure.web.WebApp("prequel-function", {
+const functionApp = new azure.web.WebApp("prequel-function-new", {
   resourceGroupName: resourceGroup.name,
   location: resourceGroup.location,
   serverFarmId: appServicePlan.id,
@@ -98,7 +98,7 @@ const database = new sql.Database("prequel-db", {
 // Export the outputs
 export const resourceGroupName = resourceGroup.name;
 export const functionAppName = functionApp.name;
-export const webhookUrl = pulumi.interpolate`https://${functionApp.defaultHostName}/api/webhook`;
+export const webhookUrl = "https://prequel-webhook-174350.azurewebsites.net/api/webhook";
 export const sqlServerName = sqlServer.name;
 export const databaseName = database.name;
 export const storageAccountName = storageAccount.name;

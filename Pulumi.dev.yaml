@@ -6,8 +6,7 @@ config:
   azure-native:subscriptionId: 98c61d81-12c6-4aa2-8ac6-8dc7b8f5e834
   prequel:githubWebhookSecret:
     secure: AAABAJYKFjaoQfyt9TkBg0w30KYh8bU83tWg2qlrdAPAM1sJWL08kfvEHZ2Jj8FRknNb8bAOkGUdjn4zfL0rTGHgAO3dTrM9
-  prequel:slackWebhookUrl:
-    secure: AAABACf9j0LvhR3iiWkBMKkPBm2JXCx3edpsXNGP0z1fBHCeOzda5/wmID5B0ffjKdQIYg3GT01CBmJWkjVj4o6pkymNC128WmX9tWRowjaTYJrdFAzy28fcluOqtAg1ak0yLQ0FsmSUVgv3F1vBxlk=
+  prequel:slackWebhookUrl: https://hooks.slack.com/services/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
   prequel:sqlAdminUsername: prequel_admin
   prequel:sqlAdminPassword:
     secure: AAABAKPsWtJWqgM664r3J73C/fzD55QPxh+7vuDEf/hY4wqikUayV585ZF50L6r4K1AjM/C2+1eYlpF7353BGSGNbcXbRfXCw/WlGAca
