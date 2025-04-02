@@ -2,102 +2,92 @@ import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure-native";
 import * as sql from "@pulumi/azure-native/sql";
 
-// Get configuration
+// Configuration
 const config = new pulumi.Config();
-const stack = pulumi.getStack();
 
-
-// Add a firewall rule for your client IP
-// const clientIpRule = new sql.FirewallRule("allow-my-ip", {
-//   resourceGroupName: resourceGroup.name,
-//   serverName: sqlServer.name,
-//   startIpAddress: "106.208.104.109",  // Your IP address
-//   endIpAddress: "106.208.104.109",
-// });
+/**
+ * Creates a SQL Server and Database for the PR Management System
+ */
 export function createDatabase(
-  resourceGroupName: string,
-  location: string = "East US"
-): {
-  server: sql.Server;
-  database: sql.Database;
-  connectionString: pulumi.Output<string>;
-} {
-  // Create a unique name for the SQL server
-  const sqlServerName = `prequel-sql-${stack}`;
-  const dbName = "prequeldb";
+  resourceGroup: azure.resources.ResourceGroup,
+  options: {
+    location?: string;
+    sqlAdminUsername?: string;
+    sqlAdminPassword?: string;
+    databaseSku?: string;
+    databaseTier?: string;
+  } = {}
+) {
+  // Set defaults
+  const location = options.location || resourceGroup.location;
+  const sqlAdminUsername = options.sqlAdminUsername || config.require("sqlAdminUsername");
+  const sqlAdminPassword = options.sqlAdminPassword || config.requireSecret("sqlAdminPassword");
+  const databaseSku = options.databaseSku || "Basic";
+  const databaseTier = options.databaseTier || "Basic";
 
-  // Get the SQL admin credentials from config
-  const sqlAdminUsername = config.require("sqlAdminUsername");
-  const sqlAdminPassword = config.requireSecret("sqlAdminPassword");
-
-  // Create a SQL server
-  const sqlServer = new sql.Server(sqlServerName, {
-    resourceGroupName: resourceGroupName,
+  // Create SQL Server
+  const sqlServer = new sql.Server("prequel-sql-server", {
+    resourceGroupName: resourceGroup.name,
     location: location,
     administratorLogin: sqlAdminUsername,
     administratorLoginPassword: sqlAdminPassword,
     version: "12.0",
+    publicNetworkAccess: "Enabled",
+    minimalTlsVersion: "1.2",
   });
 
-  // Create a firewall rule to allow Azure services
+  // Allow Azure services to access the SQL server
   const firewallRule = new sql.FirewallRule("allow-azure-services", {
-    resourceGroupName: resourceGroupName,
+    resourceGroupName: resourceGroup.name,
     serverName: sqlServer.name,
     startIpAddress: "0.0.0.0",
     endIpAddress: "0.0.0.0",
   });
 
-  // Create a SQL database
-  const database = new sql.Database(dbName, {
-    resourceGroupName: resourceGroupName,
+  // Create SQL Database
+  const database = new sql.Database("prequel-db", {
+    resourceGroupName: resourceGroup.name,
     location: location,
     serverName: sqlServer.name,
     sku: {
-      name: "Basic",
-      tier: "Basic",
+      name: databaseSku,
+      tier: databaseTier,
     },
+    maxSizeBytes: 1073741824, // 1GB
   });
 
-  // Create the connection string
-  const connectionString = pulumi.interpolate`Server=tcp:${sqlServer.name}.database.windows.net,1433;Initial Catalog=${dbName};Persist Security Info=False;User ID=${sqlAdminUsername};Password=${sqlAdminPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`;
+  // Create connection string for SQL database
+  const sqlConnectionString = pulumi.interpolate`Server=tcp:${sqlServer.name}.database.windows.net,1433;Initial Catalog=${database.name};Persist Security Info=False;User ID=${sqlAdminUsername};Password=${sqlAdminPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`;
 
+  // Return all created resources
   return {
-    server: sqlServer,
-    database: database,
-    connectionString: connectionString,
+    sqlServer,
+    database,
+    sqlConnectionString,
+    // Generate database connection parameters for Python app
+    dbParams: {
+      host: pulumi.interpolate`${sqlServer.name}.database.windows.net`,
+      database: database.name,
+      user: sqlAdminUsername,
+      password: sqlAdminPassword,
+    }
   };
 }
-// // After creating the database, run a script to create the user
-// const createUserScript = new azure.resources.DeploymentScript("create-sql-user", {
-//   resourceGroupName: resourceGroup.name,
-//   location: location,
-//   kind: "AzureCLI",
-//   azCliVersion: "2.37.0",
-//   retentionInterval: "P1D",
-//   environmentVariables: [
-//       {
-//           name: "RESOURCE_GROUP",
-//           value: resourceGroup.name,
-//       },
-//       {
-//           name: "SERVER_NAME",
-//           value: sqlServer.name,
-//       },
-//       {
-//           name: "DB_NAME",
-//           value: database.name,
-//       },
-//       {
-//           name: "ADMIN_USER",
-//           value: sqlAdminUsername,
-//       },
-//       {
-//           name: "ADMIN_PASSWORD",
-//           secureValue: sqlAdminPassword,
-//       },
-//   ],
-//   scriptContent: `
-//       QUERY="CREATE USER [prequel_admin] WITH PASSWORD = 'YourNewStrongPassword'; ALTER ROLE db_owner ADD MEMBER [prequel_admin];"
-//       az sql db query --resource-group $RESOURCE_GROUP --server $SERVER_NAME --database $DB_NAME --query "$QUERY" --username $ADMIN_USER --password $ADMIN_PASSWORD
-//   `,
-// });
+
+/**
+ * Adds a firewall rule to allow specific IP addresses to access the SQL server
+ */
+export function addSqlFirewallRule(
+  resourceGroup: azure.resources.ResourceGroup,
+  sqlServer: sql.Server,
+  name: string,
+  startIpAddress: pulumi.Input<string>,
+  endIpAddress?: pulumi.Input<string>
+) {
+  return new sql.FirewallRule(`${name}-rule`, {
+    resourceGroupName: resourceGroup.name,
+    serverName: sqlServer.name,
+    startIpAddress: startIpAddress,
+    endIpAddress: endIpAddress || startIpAddress,
+  });
+}
