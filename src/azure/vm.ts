@@ -42,9 +42,12 @@ export function createVirtualMachine(
   const setupScriptPath = path.join(__dirname, "../../scripts/setup-vm.sh");
   const setupScript = fs.readFileSync(setupScriptPath, "utf8");
 
-  // Replace placeholders with actual values
+
   const customData = pulumi.interpolate`#!/bin/bash
-  ${setupScript} "${githubWebhookSecret}" "${slackWebhookUrl}" "${options.sqlConnectionString || ""}"`;
+  export GITHUB_WEBHOOK_SECRET="${githubWebhookSecret}"
+  export SLACK_WEBHOOK_URL="${slackWebhookUrl}"
+  export SQL_CONNECTION_STRING="${options.sqlConnectionString || ""}"
+  ${setupScript}`;
 
   // Create a Virtual Machine
   const vm = new compute.VirtualMachine("prequel-vm", {
@@ -90,7 +93,7 @@ export function createVirtualMachine(
   return {
     vm,
     webhookUrl: networkInfrastructure.publicIp.ipAddress.apply(ip => 
-      ip ? `http://${ip}/webhook` : ""),
+      ip ? `http://${ip}` : ""),
     fqdn: networkInfrastructure.publicIp.dnsSettings.apply(settings => 
       settings?.fqdn || ""),
   };

@@ -8,8 +8,7 @@ config:
     secure: AAABAED1rMotQ3KbpgzArtTV1TNi/Y9hgXV8erJCXdUo9VcopbwGD//+j1awFzw32M8DUIMNRS96nmrqJ3aov0GYUtxKOMoqAcfjHJzAuPGg02YGR2HpQPsSScv/d3EnT+SJaBrtn/Uy8o/6mYumMj1efmdOkCxuSzdupRA=
   prequel:githubWebhookSecret:
     secure: AAABACkzskDiM6caW0MhnZQN0e3ogwFlx0/StuFv6jMeTRv+7H7Lqz7WgoK24WIYhzv/hgmn8BYrK1iQUyXRZ+AlasLCqI7Z
-  prequel:slackWebhookUrl:
-    secure: AAABAIc4QfdGlkYurihSbrUP7UbhO5CxEK7BET5lw2ww7Qk/dqoQjhP/pwtZZ6lNPB0H28tJ156WosAxexoJIEkqpotaDutZ41TPqFAbtzFNQg9cXCETnXaQFjfAmsotDCcTJ2twuK9VHlzUmcfNdqS15mvZnJjn08FEUK8=
+  prequel:slackWebhookUrl: https://hooks.slack.com/services/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
   prequel:vmAdminUsername: vmadmin
   prequel:vmAdminPassword:
     secure: AAABAMFaML2lNo9QvVFOHtE93jPeov3je04bhVoifeLlcnyTM5UB44FOC2/HmnEjU0KKFE+g1Fg=

@@ -54,30 +54,32 @@ const githubProvider = new github.Provider("github", {
   token: githubToken,
   owner: organizationName,
 });
-
-// Set up webhook at the organization level
-function setupOrganizationWebhook(webhookUrl: pulumi.Input<string>) {
-  console.log(`Setting up organization webhook for ${organizationName}`);
-  
-  // Create a webhook with a unique name to avoid conflicts
-  const uniqueName = `webhook-${organizationName}-${Date.now()}`;
   
   // Create a webhook for the organization
-  const webhook = new github.OrganizationWebhook(uniqueName, {
-    configuration: {
-      url: webhookUrl,
-      contentType: "json",
-      insecureSsl: false,
-      secret: githubWebhookSecret,
-    },
-    events: ["pull_request", "pull_request_review"],
-    active: true,
-  }, { 
-    provider: githubProvider,
-  });
-
-  return webhook;
-}
+  function setupOrganizationWebhook(webhookUrl: pulumi.Input<string>) {
+    console.log(`Setting up organization webhook for ${organizationName}`);
+    
+    // Use a fixed name without timestamps
+    const uniqueName = `webhook-${organizationName}`;
+    
+    // Create a webhook for the organization
+    const webhook = new github.OrganizationWebhook(uniqueName, {
+      configuration: {
+        url: webhookUrl,
+        contentType: "json",
+        insecureSsl: false,
+        secret: githubWebhookSecret,
+      },
+      events: ["pull_request", "pull_request_review"],
+      active: true,
+    }, { 
+      provider: githubProvider,
+      // Don't protect configuration from changes
+      replaceOnChanges: ["configuration"],
+    });
+  
+    return webhook;
+  }
 
 // Call the function to create the organization webhook
 const orgWebhook = setupOrganizationWebhook(network.webhookUrl);
