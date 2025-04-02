@@ -1,107 +1,130 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure-native";
-import * as azureStorage from "@pulumi/azure-native/storage";
-import * as sql from "@pulumi/azure-native/sql";
+import * as github from "@pulumi/github";
+import * as fs from "fs";
+import * as path from "path";
 
-// Define config
+// Import our infrastructure modules
+import { createVirtualMachine } from "./src/azure/vm";
+import { createDatabase, addSqlFirewallRule } from "./src/azure/database";
+import { createNetworkInfrastructure } from "./src/azure/network";
+
+// Configuration
 const config = new pulumi.Config();
 const stack = pulumi.getStack();
-
-// Get the organization name from config
 const organizationName = config.get("organizationName") || "Shetchuko";
+const githubToken = config.requireSecret("githubToken");
+const githubWebhookSecret = config.requireSecret("githubWebhookSecret");
+const slackWebhookUrl = config.requireSecret("slackWebhookUrl");
 
-// Create a resource group
-const resourceGroup = new azure.resources.ResourceGroup("prequel-rg", {
-  location: "Central India"
+// Create resource group
+const rgName = `prequel-rg-${stack}`; // Use the stack name for uniqueness
+const resourceGroup = new azure.resources.ResourceGroup(rgName, {
+  // Remove the explicit name property as it's not valid in ResourceGroupArgs
+  location: config.get("location") || "Central India"
 });
 
-// Create storage account
-const storageAccount = new azureStorage.StorageAccount("prequalstorage", {
-  resourceGroupName: resourceGroup.name,
-  location: resourceGroup.location,
-  sku: {
-    name: azureStorage.SkuName.Standard_LRS,
-  },
-  kind: azureStorage.Kind.StorageV2,
+// Add logging to help debug
+console.log(`Creating resource group: ${rgName}`);
+
+// Create network infrastructure
+const network = createNetworkInfrastructure(resourceGroup);
+
+// Create database infrastructure
+const db = createDatabase(resourceGroup);
+
+// Create VM for webhook handler
+const vm = createVirtualMachine(resourceGroup, network, {
+  githubWebhookSecret: githubWebhookSecret,
+  slackWebhookUrl: slackWebhookUrl,
+  sqlConnectionString: db.sqlConnectionString,
 });
 
-// Get storage account keys
-const storageAccountKeys = pulumi.all([resourceGroup.name, storageAccount.name])
-  .apply(([resourceGroupName, accountName]) => {
-    return azureStorage.listStorageAccountKeys({
-      resourceGroupName: resourceGroupName,
-      accountName: accountName,
+// Allow VM to access SQL Database
+const vmIp = network.publicIp.ipAddress.apply(ip => ip || "0.0.0.0");
+const vmSqlFirewallRule = addSqlFirewallRule(
+  resourceGroup,
+  db.sqlServer,
+  "webhook-vm",
+  vmIp
+);
+
+// Setup GitHub provider for managing repositories
+const githubProvider = new github.Provider("github", {
+  token: githubToken,
+  owner: organizationName,
+});
+  
+  // Create a webhook for the organization
+  function setupOrganizationWebhook(webhookUrl: pulumi.Input<string>) {
+    console.log(`Setting up organization webhook for ${organizationName}`);
+    
+    // Use a fixed name without timestamps
+    const uniqueName = `webhook-${organizationName}`;
+    
+    // Create a webhook for the organization
+    const webhook = new github.OrganizationWebhook(uniqueName, {
+      configuration: {
+        url: webhookUrl,
+        contentType: "json",
+        insecureSsl: false,
+        secret: githubWebhookSecret,
+      },
+      events: ["pull_request", "pull_request_review"],
+      active: true,
+    }, { 
+      provider: githubProvider,
+      // Don't protect configuration from changes
+      replaceOnChanges: ["configuration"],
     });
-  });
+  
+    return webhook;
+  }
 
-const primaryStorageKey = storageAccountKeys.keys[0].value;
+// Call the function to create the organization webhook
+const orgWebhook = setupOrganizationWebhook(network.webhookUrl);
 
-// Create App Service plan
-const appServicePlan = new azure.web.AppServicePlan("prequel-plan", {
-  resourceGroupName: resourceGroup.name,
-  location: resourceGroup.location,
-  sku: {
-    name: "Y1",
-    tier: "Dynamic",
-  },
-});
+// Export the webhook ID
+export const organizationWebhookId = orgWebhook.id;
+// Function to setup a repository with webhook and branch protection
+function setupRepository(repoName: string, webhookUrl: pulumi.Input<string>) {
+  // Create a webhook for the repository
+  const webhook = new github.RepositoryWebhook(`webhook-${repoName}`, {
+    repository: repoName,
+    configuration: {
+      url: webhookUrl,
+      contentType: "json",
+      insecureSsl: false,
+      secret: githubWebhookSecret,
+    },
+    events: ["pull_request", "pull_request_review"],
+    active: true,
+  }, { provider: githubProvider });
 
-// Create Function App
-const functionApp = new azure.web.WebApp("prequel-function-new", {
-  resourceGroupName: resourceGroup.name,
-  location: resourceGroup.location,
-  serverFarmId: appServicePlan.id,
-  kind: "functionapp",
-  identity: {
-    type: "SystemAssigned",
-  },
-  siteConfig: {
-    appSettings: [
-      { name: "AzureWebJobsStorage", value: pulumi.interpolate`DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${primaryStorageKey};EndpointSuffix=core.windows.net` },
-      { name: "WEBSITE_NODE_DEFAULT_VERSION", value: "~18" },
-      { name: "FUNCTIONS_EXTENSION_VERSION", value: "~4" },
-      { name: "FUNCTIONS_WORKER_RUNTIME", value: "node" },
-      { name: "WEBSITE_RUN_FROM_PACKAGE", value: "1" },
-      { name: "GITHUB_WEBHOOK_SECRET", value: config.requireSecret("githubWebhookSecret") },
-    ],
-  },
-});
+  // Set up branch protection
+  const branchProtection = new github.BranchProtection(`branch-protection-${repoName}`, {
+    repositoryId: `${organizationName}/${repoName}`,
+    pattern: "main",
+    enforceAdmins: false,
+    requiredPullRequestReviews: [{
+      dismissStaleReviews: true,
+      restrictDismissals: false,
+      requiredApprovingReviewCount: 1,
+    }],
+  }, { provider: githubProvider });
 
-// Create SQL Server
-const sqlServer = new sql.Server("prequel-sql-server", {
-  resourceGroupName: resourceGroup.name,
-  location: resourceGroup.location,
-  administratorLogin: config.require("sqlAdminUsername"),
-  administratorLoginPassword: config.requireSecret("sqlAdminPassword"),
-  version: "12.0",
-});
+  return {
+    webhook,
+    branchProtection,
+  };
+}
 
-// Allow Azure services to access the SQL server
-const firewallRule = new sql.FirewallRule("allow-azure-services", {
-  resourceGroupName: resourceGroup.name,
-  serverName: sqlServer.name,
-  startIpAddress: "0.0.0.0",
-  endIpAddress: "0.0.0.0",
-});
-
-// Create SQL Database
-const database = new sql.Database("prequel-db", {
-  resourceGroupName: resourceGroup.name,
-  location: resourceGroup.location,
-  serverName: sqlServer.name,
-  sku: {
-    name: "Basic",
-    tier: "Basic",
-  },
-});
-
-// Export the outputs
-export const resourceGroupName = resourceGroup.name;
-export const functionAppName = functionApp.name;
-export const webhookUrl = "https://prequel-webhook-174350.azurewebsites.net/api/webhook";
-export const sqlServerName = sqlServer.name;
-export const databaseName = database.name;
-export const storageAccountName = storageAccount.name;
-
-// Create connection string for SQL database
-export const sqlConnectionString = pulumi.interpolate`Server=tcp:${sqlServer.name}.database.windows.net,1433;Initial Catalog=${database.name};Persist Security Info=False;User ID=${config.require("sqlAdminUsername")};Password=${config.requireSecret("sqlAdminPassword")};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`;
+// Export outputs
+export const resourceGroupName = resourceGroup.name; // This is the export, not a redeclaration
+export const vmName = vm.vm.name;
+export const vmIpAddress = network.publicIp.ipAddress;
+export const vmFqdn = network.fqdn;
+export const webhookUrl = network.webhookUrl;
+export const sqlServerName = db.sqlServer.name;
+export const databaseName = db.database.name;
+export const sqlConnectionString = pulumi.interpolate`Server=tcp:${db.sqlServer.name}.database.windows.net,1433;Initial Catalog=${db.database.name};Persist Security Info=False;User ID=${config.require("sqlAdminUsername")};Password=${config.requireSecret("sqlAdminPassword")};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`;
