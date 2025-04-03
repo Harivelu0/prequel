@@ -20,6 +20,18 @@ apt upgrade -y
 echo "Installing dependencies..."
 apt install -y nginx python3-pip python3-venv git ufw unixodbc-dev curl
 
+# Install Microsoft ODBC drivers for SQL Server
+echo "Installing Microsoft ODBC drivers..."
+curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
+apt-get update
+ACCEPT_EULA=Y apt-get install -y msodbcsql17
+
+# Verify ODBC configuration
+echo "Verifying ODBC configuration..."
+odbcinst -j
+cat /etc/odbcinst.ini
+
 # Set up firewall
 echo "Configuring firewall..."
 ufw allow ssh
@@ -59,7 +71,26 @@ cp -r $CLONE_DIR/* $APP_DIR/
 echo "Files copied, listing app directory:"
 ls -la $APP_DIR
 
-# Create environment file
+# Parse SQL_CONNECTION_STRING to extract individual components
+if [ ! -z "$SQL_CONNECTION_STRING" ]; then
+  echo "Extracting SQL components from connection string..."
+  
+  # Extract server (between 'Server=tcp:' and ',1433')
+  SQL_SERVER=$(echo "$SQL_CONNECTION_STRING" | grep -o 'Server=tcp:[^,]*' | sed 's/Server=tcp://')
+  
+  # Extract database (between 'Initial Catalog=' and ';')
+  SQL_DATABASE=$(echo "$SQL_CONNECTION_STRING" | grep -o 'Initial Catalog=[^;]*' | sed 's/Initial Catalog=//')
+  
+  # Extract username (between 'User ID=' and ';')
+  SQL_USERNAME=$(echo "$SQL_CONNECTION_STRING" | grep -o 'User ID=[^;]*' | sed 's/User ID=//')
+  
+  # Extract password (between 'Password=' and ';')
+  SQL_PASSWORD=$(echo "$SQL_CONNECTION_STRING" | grep -o 'Password=[^;]*' | sed 's/Password=//')
+  
+  echo "SQL components extracted (values masked): SERVER=*******, DATABASE=*******, USERNAME=*******, PASSWORD=*******"
+fi
+
+# Create environment file with individual SQL components
 echo "Creating .env file..."
 cat > $APP_DIR/.env << EOF
 # GitHub webhook configuration
@@ -68,14 +99,20 @@ GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
 # Slack webhook URL
 SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
 
-# Database connection string
+# Database connection components
+SQL_SERVER=${SQL_SERVER}
+SQL_DATABASE=${SQL_DATABASE}
+SQL_USERNAME=${SQL_USERNAME}
+SQL_PASSWORD=${SQL_PASSWORD}
+
+# Full database connection string
 DATABASE_CONNECTION_STRING=${SQL_CONNECTION_STRING}
 EOF
 
 echo "Content of .env file (with values masked):"
 cat $APP_DIR/.env | sed 's/=.*$/=******/'
 
-# Create a systemd service file
+# Create a systemd service file with EnvironmentFile directive
 echo "Setting up systemd service..."
 cat > /etc/systemd/system/github-slack-automation.service << EOF
 [Unit]
@@ -86,7 +123,8 @@ After=network.target
 User=${CURRENT_USER}
 WorkingDirectory=${APP_DIR}
 Environment="PATH=${APP_DIR}/venv/bin"
-ExecStart=${APP_DIR}/venv/bin/gunicorn --workers 2 --bind 0.0.0.0:5000 app:app
+EnvironmentFile=${APP_DIR}/.env
+ExecStart=${APP_DIR}/venv/bin/gunicorn --workers 2 --bind 0.0.0.0:5001 app:app
 Restart=always
 
 [Install]
@@ -101,7 +139,7 @@ server {
     server_name _;
 
     location / {
-        proxy_pass http://localhost:5000;
+        proxy_pass http://localhost:5001;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -137,3 +175,5 @@ systemctl enable github-slack-automation
 rm -rf $CLONE_DIR
 
 echo "Installation completed successfully at $(date)"
+echo "GitHub webhook URL: http://$(curl -s ifconfig.me)/"
+echo "Remember to configure this URL in your GitHub repository webhooks!"
