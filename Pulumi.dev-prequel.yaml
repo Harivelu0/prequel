@@ -1,20 +1,21 @@
 config:
   azure-native:clientId: a31cc29f-2efb-47e7-8871-63e15650fb9d
   azure-native:clientSecret:
-    secure: AAABAGaVwXRuZpxp+FxttpWiutTdFeaxHo4dxLlQ7FBTOMU71JGRl4MvkhVrwrhttXQshDBFhNwKQxbg9v3Mol5iwX3Nu9WQ
+    secure: AAABAIAv0wTolsT0uodXEvcL0VIxZJk8qIo9LbD92HoTkQbt/PO00Qkiohfxazkmi0h5oqqMO6f+1Z8V135QEUF87mfFbSt0
   azure-native:tenantId: a5bd300c-c3b3-41d8-87e0-1f5c8d364af3
   azure-native:subscriptionId: 98c61d81-12c6-4aa2-8ac6-8dc7b8f5e834
   prequel:githubToken:
-    secure: AAABAED1rMotQ3KbpgzArtTV1TNi/Y9hgXV8erJCXdUo9VcopbwGD//+j1awFzw32M8DUIMNRS96nmrqJ3aov0GYUtxKOMoqAcfjHJzAuPGg02YGR2HpQPsSScv/d3EnT+SJaBrtn/Uy8o/6mYumMj1efmdOkCxuSzdupRA=
+    secure: AAABAP8ydFE74Yu0c0U84pGXV2aPNwn7770HWfwntNUw+FQWJnz+cKATmwS3aCAI3HcYwEhbQ93W3tHUS8I20bAdTtxMTLGvNTek07xp3NEnTXI4UED3hjQF6Y5EYjHimEJPloK7pC4Ppse85ita+kCKD8Oy8Cd/ofZYDVg=
   prequel:githubWebhookSecret:
-    secure: AAABACkzskDiM6caW0MhnZQN0e3ogwFlx0/StuFv6jMeTRv+7H7Lqz7WgoK24WIYhzv/hgmn8BYrK1iQUyXRZ+AlasLCqI7Z
-  prequel:slackWebhookUrl: https://hooks.slack.com/services/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
+    secure: AAABAJW82YII2q+Sfhe9VefnWCLfZePe2tHrd7es2RX4le6ZNm4RKUDjE8ZgLShKUc9wR9kNaV5VKMt/CHNYex2vWX9J3/0X
+  prequel:slackWebhookUrl:
+    secure: AAABAK/cCQRAQr/l/mgwYDqBH72/FrCNt7+jl5A2JBpDj3pVbnY5NDy+4eR+8Pq8vlq+gmYPARcwjmP+WlOyqzoTWt+DVA8spPHNGbFh/UYgzqRj+TSoZmz367kVRcAKpjp4LHq4Pmn9HFm5uAju7zQ=
   prequel:vmAdminUsername: vmadmin
   prequel:vmAdminPassword:
-    secure: AAABAMFaML2lNo9QvVFOHtE93jPeov3je04bhVoifeLlcnyTM5UB44FOC2/HmnEjU0KKFE+g1Fg=
+    secure: AAABAMDZdVs3XzqdROfbWh4TE6WPvjeYPUQQ12grkocPu9IlS+Tful9/vISsW/BEVyc6Jn/inEU=
   prequel:sqlAdminUsername: prequel_admin
   prequel:sqlAdminPassword:
-    secure: AAABAHqr8e4t2K5012EDdTcr/KwtA0/Ylt/HAk/VDdk5q0K9bRw1bUHVZRKBePpoNKFjC+Ln9VQ=
+    secure: AAABANpJPKMwITMbOf3+fYIAKZq3W2PsjhG9eDnr+9C4BSEM0Fe5Gjf1IpSfynFqU9+ejsBGudE=
   prequel:location: Central India
   prequel:organizationName: Shetchuko
   prequel:webhookUrl: http://4.240.61.37

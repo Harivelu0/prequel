@@ -55,10 +55,6 @@ echo "Setting up Python virtual environment..."
 python3 -m venv venv
 source venv/bin/activate
 
-# Install Python packages
-echo "Installing Python packages..."
-pip install flask requests python-dotenv gunicorn pymysql pyodbc
-
 # Clone webhook handler code
 echo "Cloning webhook handler code..."
 CLONE_DIR="/tmp/prequel-webhook"
@@ -70,6 +66,20 @@ echo "Setting up application files..."
 cp -r $CLONE_DIR/* $APP_DIR/
 echo "Files copied, listing app directory:"
 ls -la $APP_DIR
+
+# Install Python packages from requirements.txt
+echo "Installing Python packages..."
+pip install -r $APP_DIR/requirements.txt || echo "Failed to install from requirements.txt, falling back to manual installation"
+
+# Install gunicorn explicitly to ensure it's available
+echo "Installing gunicorn explicitly..."
+pip install gunicorn
+
+# Fallback for package installation if requirements.txt fails
+if [ $? -ne 0 ]; then
+    echo "Installing Python packages manually..."
+    pip install flask requests python-dotenv gunicorn pymysql pyodbc
+fi
 
 # Parse SQL_CONNECTION_STRING to extract individual components
 if [ ! -z "$SQL_CONNECTION_STRING" ]; then
@@ -123,8 +133,9 @@ After=network.target
 User=${CURRENT_USER}
 WorkingDirectory=${APP_DIR}
 Environment="PATH=${APP_DIR}/venv/bin"
+Environment="PYTHONPATH=${APP_DIR}"
 EnvironmentFile=${APP_DIR}/.env
-ExecStart=${APP_DIR}/venv/bin/gunicorn --workers 2 --bind 0.0.0.0:5001 app:app
+ExecStart=${APP_DIR}/venv/bin/gunicorn --workers 2 --bind 0.0.0.0:5001 prequel_app.app:app
 Restart=always
 
 [Install]
@@ -155,12 +166,36 @@ rm -f /etc/nginx/sites-enabled/default
 # Restart Nginx
 systemctl restart nginx
 
-# Set up cron jobs for scheduled tasks
+# Set up cron jobs for scheduled tasks (adjust paths based on actual file locations)
 echo "Setting up cron jobs..."
+# Remove any existing cron jobs for these scripts
 (crontab -l 2>/dev/null || echo "") | grep -v "stale_pr_detector.py" | crontab -
-(crontab -l 2>/dev/null; echo "0 9 * * * $APP_DIR/venv/bin/python $APP_DIR/stale_pr_detector.py >> $APP_DIR/stale_pr.log 2>&1") | crontab -
 (crontab -l 2>/dev/null || echo "") | grep -v "metrics_calculator.py" | crontab -
-(crontab -l 2>/dev/null; echo "0 10 * * 1 $APP_DIR/venv/bin/python $APP_DIR/metrics_calculator.py >> $APP_DIR/metrics.log 2>&1") | crontab -
+
+# Add new cron jobs with updated paths
+if [ -f "$APP_DIR/prequel_app/stale_pr_detector.py" ]; then
+    (crontab -l 2>/dev/null; echo "0 9 * * * cd $APP_DIR && $APP_DIR/venv/bin/python $APP_DIR/prequel_app/stale_pr_detector.py >> $APP_DIR/stale_pr.log 2>&1") | crontab -
+    echo "Added cron job for stale_pr_detector.py"
+else
+    echo "Warning: stale_pr_detector.py not found, cron job not added"
+fi
+
+if [ -f "$APP_DIR/prequel_app/metrics_calculator.py" ]; then
+    (crontab -l 2>/dev/null; echo "0 10 * * 1 cd $APP_DIR && $APP_DIR/venv/bin/python $APP_DIR/prequel_app/metrics_calculator.py >> $APP_DIR/metrics.log 2>&1") | crontab -
+    echo "Added cron job for metrics_calculator.py"
+else
+    echo "Warning: metrics_calculator.py not found, cron job not added"
+fi
+
+# Verify gunicorn installation
+echo "Verifying gunicorn installation..."
+$APP_DIR/venv/bin/pip list | grep gunicorn
+
+# List the actual directory structure 
+echo "Directory structure in $APP_DIR:"
+ls -la $APP_DIR
+ls -la $APP_DIR/prequel_app
+ls -la $APP_DIR/prequel_db
 
 # Set proper ownership for the application files
 echo "Setting permissions..."
