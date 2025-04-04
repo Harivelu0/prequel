@@ -5,15 +5,23 @@ sudo apt update
 sudo apt install -y curl dirmngr apt-transport-https lsb-release ca-certificates
 
 # Add NodeSource repository for Node.js 18
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+
+# Install NVM
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+
+# Source nvm in your current shell
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # Install Node.js 18
-sudo apt install -y nodejs
+nvm install 18
 
-# Verify installation
-node --version
-npm --version
+# Use Node.js 18
+nvm use 18
 
+# Verify
+node -v
+npm -v
 
 # Download and install Pulumi
 curl -fsSL https://get.pulumi.com | sh
@@ -45,7 +53,7 @@ ts-node src/index.ts setup-repo --name pulumi-repo --org Shetchuko --description
 # Branch protection rules
 PRs must be reviewed before merging
 Fresh approvals are needed after changes
-No one can bypass the protection rules (even admins)
+No one can by pass the protection rules (even admins)
 Code quality standards are maintained through required reviews
 
 

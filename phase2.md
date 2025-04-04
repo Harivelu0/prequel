@@ -25,7 +25,7 @@ pulumi destroy --target "urn:pulumi:dev-prequel::prequel::azure-native:compute:V
 
 pulumi stack --show-urns
 
-pulumi state delete "urn:pulumi:dev-prequel::prequel::github:index/organizationWebhook:OrganizationWebhook::webhook-Shetchuko-1743589554265"
+pulumi state delete "urn:pulumi:dev-prequel::prequel::github:index/organizationWebhook:OrganizationWebhook::webhook-Shetchuko"
 
 az disk delete --resource-group PREQUEL-RG-DEV-PREQUEL6770CB6E --name prequel-os-disk --yes
 
@@ -46,3 +46,31 @@ Then when you tried to recreate the VM, the disk was still attached to the old V
 
 
 env for app is not exported previoulsy so need to manually add that after i updated the script 
+
+
+Key improvements:
+
+Added logging to a file for better debugging
+Improved environment variable handling and detection
+Added verification steps (like listing the directory contents)
+Better error handling with status logging
+Cleaned up temporary directories after use
+Added timestamps to see how long installation takes
+Used symbolic links (ln -sf) to avoid errors if the link already exists
+Added more detailed output for troubleshooting
+
+Diagnostics:
+  pulumi:pulumi:Stack (prequel-dev-prequel):
+    Creating resource group: prequel-rg-dev-prequel
+    Setting up organization webhook for Shetchuko
+
+    error: an unhandled error occurred: Program exited with non-zero exit code: -1
+
+
+    local host 5000 will not work so we need to replace it with 5001
+
+
+
+    after the deployment it will takes some time with actual hosting cause we have some initla setup
+
+MkTqpCxX1QTK+kZTmpjVKw==
