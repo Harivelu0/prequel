@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 200">
+  <!-- Background -->
+  <rect x="25" y="25" width="200" height="150" rx="10" fill="#2D3748" stroke="#4A5568" stroke-width="3"/>
+  
+  <!-- People Icons -->
+  <circle cx="60" cy="60" r="15" fill="#6366F1" />
+  <path d="M60 80 C40 80 40 95 40 110 L80 110 C80 95 80 80 60 80 Z" fill="#6366F1" />
+  
+  <circle cx="125" cy="60" r="15" fill="#8B5CF6" />
+  <path d="M125 80 C105 80 105 95 105 110 L145 110 C145 95 145 80 125 80 Z" fill="#8B5CF6" />
+  
+  <circle cx="190" cy="60" r="15" fill="#EC4899" />
+  <path d="M190 80 C170 80 170 95 170 110 L210 110 C210 95 210 80 190 80 Z" fill="#EC4899" />
+  
+  <!-- Connection Lines -->
+  <path d="M75 70 L110 70" stroke="#F7FAFC" stroke-width="2" stroke-dasharray="4" />
+  <path d="M140 70 L175 70" stroke="#F7FAFC" stroke-width="2" stroke-dasharray="4" />
+  
+  <!-- Bar Chart -->
+  <rect x="40" y="130" width="20" height="30" fill="#6366F1" />
+  <rect x="70" y="125" width="20" height="35" fill="#8B5CF6" />
+  <rect x="100" y="120" width="20" height="40" fill="#EC4899" />
+  <rect x="130" y="135" width="20" height="25" fill="#6366F1" />
+  <rect x="160" y="115" width="20" height="45" fill="#8B5CF6" />
+  <rect x="190" y="130" width="20" height="30" fill="#EC4899" />
+  
+  <!-- Base Line -->
+  <path d="M35 160 L215 160" stroke="#F7FAFC" stroke-width="2" />
+  
+  <!-- Data Points -->
+  <circle cx="50" cy="90" r="3" fill="#F7FAFC" />
+  <circle cx="80" cy="95" r="3" fill="#F7FAFC" />
+  <circle cx="110" cy="85" r="3" fill="#F7FAFC" />
+  <circle cx="140" cy="92" r="3" fill="#F7FAFC" />
+  <circle cx="170" cy="88" r="3" fill="#F7FAFC" />
+  <circle cx="200" cy="91" r="3" fill="#F7FAFC" />
+  
+  <!-- Connecting Line -->
+  <path d="M50 90 L80 95 L110 85 L140 92 L170 88 L200 91" stroke="#F7FAFC" stroke-width="1" fill="none" />
+  
+  <!-- Text Label -->
+  <text x="125" y="180" fill="#F7FAFC" font-family="Arial" font-size="14" text-anchor="middle" font-weight="bold">TEAM ANALYTICS</text>
+</svg>

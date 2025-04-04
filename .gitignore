@@ -1,8 +1,9 @@
 /bin/
-/node_modules/
+infrastructure/node_modules/
 
 .env
 dist
-
+cd
 scripts/setup-config.sh
 deploy/*
+venv
