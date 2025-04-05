@@ -18,18 +18,7 @@ apt upgrade -y
 
 # Install required dependencies
 echo "Installing dependencies..."
-apt install -y nginx python3-pip python3-venv git ufw unixodbc-dev curl
-
-# Install Node.js
-echo "Installing Node.js..."
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-apt install -y nodejs
-
-# Verify Node.js installation
-echo "Node.js version:"
-node --version
-echo "npm version:"
-npm --version
+apt install -y nginx python3-pip python3-venv git ufw unixodbc-dev curl flask_cors
 
 # Install Microsoft ODBC drivers for SQL Server
 echo "Installing Microsoft ODBC drivers..."
@@ -61,27 +50,20 @@ APP_DIR="$HOME_DIR/prequel"
 mkdir -p $APP_DIR
 cd $APP_DIR
 
-# Create directories for backend and frontend
-mkdir -p $APP_DIR/backend
-mkdir -p $APP_DIR/frontend
-
 # Clone repository
 echo "Cloning application code..."
 CLONE_DIR="/tmp/prequel-app"
 mkdir -p $CLONE_DIR
 git clone https://github.com/Harivelu0/prequel $CLONE_DIR
 
-# Copy backend files
+# Create backend directory
+mkdir -p $APP_DIR/backend
+
+# Copy only backend files
 echo "Setting up backend files..."
 cp -r $CLONE_DIR/backend/* $APP_DIR/backend/
 echo "Backend files copied, listing backend directory:"
 ls -la $APP_DIR/backend
-
-# Copy frontend files
-echo "Setting up frontend files..."
-cp -r $CLONE_DIR/frontend/* $APP_DIR/frontend/
-echo "Frontend files copied, listing frontend directory:"
-ls -la $APP_DIR/frontend
 
 # Set up backend
 echo "Setting up backend..."
@@ -100,7 +82,7 @@ pip install gunicorn
 # Fallback for package installation if requirements.txt fails
 if [ $? -ne 0 ]; then
     echo "Installing Python packages manually..."
-    pip install flask requests python-dotenv gunicorn pymysql pyodbc flask_cors
+    pip install flask requests python-dotenv gunicorn pymysql pyodbc flask-cors
 fi
 
 # Parse SQL_CONNECTION_STRING to extract individual components
@@ -141,22 +123,6 @@ SQL_PASSWORD=${SQL_PASSWORD}
 DATABASE_CONNECTION_STRING=${SQL_CONNECTION_STRING}
 EOF
 
-# Set up frontend
-echo "Setting up frontend..."
-cd $APP_DIR/frontend
-
-# Install Node.js dependencies
-echo "Installing frontend dependencies..."
-npm install
-
-# Install specific React dependencies
-npm install react@18 react-dom@18
-npm install axios swr react-query @headlessui/react @heroicons/react date-fns recharts
-
-# Build the frontend
-echo "Building frontend..."
-npm run build
-
 # Create a systemd service file for backend
 echo "Setting up systemd service for backend..."
 cat > /etc/systemd/system/prequel-backend.service << EOF
@@ -177,33 +143,23 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
-# Configure Nginx
-echo "Configuring Nginx..."
+# Configure Nginx as reverse proxy
+echo "Configuring Nginx as reverse proxy..."
 cat > /etc/nginx/sites-available/prequel << EOF
 server {
     listen 80;
     server_name _;
 
-    # Frontend - Serve Next.js static files
-    location / {
-        root ${APP_DIR}/frontend/.next/server/pages;
-        try_files \$uri \$uri.html \$uri/index.html /index.html;
-    }
-
-    # Frontend - Next.js static assets
-    location /_next/ {
-        alias ${APP_DIR}/frontend/.next/;
-        expires 30d;
-        add_header Cache-Control "public, max-age=2592000";
-    }
-
-    # Backend API
+    # API endpoints
     location /api/ {
         proxy_pass http://localhost:5001/api/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_cache_bypass \$http_upgrade;
     }
 
@@ -213,6 +169,7 @@ server {
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
 EOF
@@ -222,6 +179,7 @@ ln -sf /etc/nginx/sites-available/prequel /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
 # Test Nginx configuration
+echo "Testing Nginx configuration..."
 nginx -t
 
 # Restart Nginx
@@ -240,5 +198,6 @@ systemctl enable prequel-backend
 rm -rf $CLONE_DIR
 
 echo "Installation completed successfully at $(date)"
-echo "Application URL: http://$(curl -s ifconfig.me)/"
+echo "Backend API available at: http://$(curl -s ifconfig.me)/api/"
+echo "GitHub webhook URL: http://$(curl -s ifconfig.me)/"
 echo "Remember to configure your GitHub organization webhook to this URL!"
