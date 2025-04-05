@@ -38,6 +38,71 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
         except Exception as e:
             logger.error(f"Error checking database connection: {str(e)}")
             return False
+     
+    def get_recent_prs(self, limit=10):
+        """
+        Get the most recent pull requests
+        
+        Args:
+            limit: Maximum number of PRs to return
+            
+        Returns:
+            List of recent pull requests with repository and author information
+        """
+        # Check if we have a valid connection
+        if not hasattr(self, 'conn') or not self.conn:
+            logger.warning("Database operation skipped due to missing connection")
+            return []
+            
+        try:
+            query = """
+            SELECT 
+                pr.id, 
+                pr.title, 
+                pr.number, 
+                pr.html_url,
+                pr.created_at,
+                pr.updated_at,
+                pr.state,
+                repo.name as repository_name,
+                u.username as author_name
+            FROM 
+                pull_requests pr
+            JOIN 
+                repositories repo ON pr.repository_id = repo.id
+            JOIN 
+                users u ON pr.author_id = u.id
+            ORDER BY 
+                pr.created_at DESC
+            OFFSET 0 ROWS
+            FETCH NEXT ? ROWS ONLY
+            """
+            
+            self.cursor.execute(query, (limit,))
+            results = self.cursor.fetchall()
+            
+            # Format the results
+            recent_prs = []
+            for row in results:
+                pr_id, title, number, html_url, created_at, updated_at, state, repo_name, author_name = row
+                recent_prs.append({
+                    'id': pr_id,
+                    'title': title,
+                    'number': number,
+                    'html_url': html_url,
+                    'created_at': created_at.isoformat() if created_at else None,
+                    'updated_at': updated_at.isoformat() if updated_at else None,
+                    'state': state,
+                    'repository_name': repo_name,
+                    'author_name': author_name
+                })
+            
+            return recent_prs
+        
+        except Exception as e:
+            logger.error(f"Error in get_recent_prs: {str(e)}")
+            return []
+         
         
     # In prequel_db/db_handler.py or a new file like prequel_db/db_api.py
 
@@ -116,7 +181,7 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
                 u.created_at,
                 COUNT(DISTINCT pr.id) as pr_count,
                 (SELECT COUNT(DISTINCT rv.id) FROM pr_reviews rv WHERE rv.reviewer_id = u.id) as review_count,
-                (SELECT COUNT(DISTINCT rc.id) FROM review_comments rc WHERE rc.author_id = u.id AND rc.contains_command = 1) as command_count
+                (SELECT COUNT(DISTINCT rc.id) FROM review_comments rc WHERE rc.author_id = u.id) as comment_count
             FROM users u
             LEFT JOIN pull_requests pr ON u.id = pr.author_id
             GROUP BY u.id, u.github_id, u.username, u.avatar_url, u.created_at
@@ -125,7 +190,7 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
             
             contributors = []
             for row in self.cursor.fetchall():
-                user_id, github_id, username, avatar_url, created_at, pr_count, review_count, command_count = row
+                user_id, github_id, username, avatar_url, created_at, pr_count, review_count, comment_count = row
                 
                 # Get repositories this user contributed to
                 self.cursor.execute(
@@ -145,7 +210,7 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
                     'created_at': created_at.isoformat() if created_at else None,
                     'pr_count': pr_count or 0,
                     'review_count': review_count or 0,
-                    'command_count': command_count or 0,
+                    'comment_count': comment_count or 0,  # All comments, not just commands
                     'repositories': repositories
                 })
             
@@ -153,7 +218,7 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
             
         except Exception as e:
             logger.error(f"Error in get_contributors_with_counts: {str(e)}")
-            return []   
+            return []
         
     def get_pr_metrics(self):
         """Get metrics for the frontend dashboard"""
@@ -163,7 +228,7 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
             return {
                 'pr_authors': [],
                 'active_reviewers': [],
-                'command_users': [],
+                'comment_users': [],
                 'stale_pr_count': 0
             }
             
@@ -190,6 +255,7 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
             active_reviewers_rows = self.cursor.fetchall()
             active_reviewers = [[row[0], row[1]] for row in active_reviewers_rows]
             
+            # Get comment users
             self.cursor.execute(
                 """SELECT u.username, COUNT(rc.id) as comment_count
                    FROM users u
@@ -210,7 +276,7 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
             return {
                 'pr_authors': pr_authors,
                 'active_reviewers': active_reviewers,
-                'command_users': command_users,
+                'comment_users': comment_users,  # Changed from command_users to comment_users
                 'stale_pr_count': stale_pr_count
             }
         except Exception as e:
@@ -218,8 +284,6 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
             return {
                 'pr_authors': [],
                 'active_reviewers': [],
-                'command_users': [],
+                'comment_users': [],
                 'stale_pr_count': 0
-            }     
-            
-            
+            }

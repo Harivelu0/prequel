@@ -22,7 +22,8 @@ interface Contributor {
   avatar_url: string;
   pr_count: number;
   review_count: number;
-  command_count: number;
+  comment_count: number;
+  command_count?: number;
   repositories: string[];
 }
 
@@ -30,78 +31,62 @@ export default function ContributorsPage() {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Define mock data here, before it's used
-  const mockContributors: Contributor[] = [
-    {
-      id: 1,
-      github_id: 1001,
-      username: 'developer1',
-      avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=developer1',
-      pr_count: 24,
-      review_count: 36,
-      command_count: 8,
-      repositories: ['api-service', 'frontend', 'core-lib']
-    },
-    {
-      id: 2,
-      github_id: 1002,
-      username: 'developer2',
-      avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=developer2',
-      pr_count: 18,
-      review_count: 42,
-      command_count: 12,
-      repositories: ['frontend', 'docs']
-    },
-    {
-      id: 3,
-      github_id: 1003,
-      username: 'developer3',
-      avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=developer3',
-      pr_count: 16,
-      review_count: 28,
-      command_count: 5,
-      repositories: ['core-lib', 'api-service']
-    },
-    {
-      id: 4,
-      github_id: 1004,
-      username: 'developer4',
-      avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=developer4',
-      pr_count: 12,
-      review_count: 20,
-      command_count: 3,
-      repositories: ['docs', 'frontend']
-    },
-    {
-      id: 5,
-      github_id: 1005,
-      username: 'developer5',
-      avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=developer5',
-      pr_count: 8,
-      review_count: 15,
-      command_count: 2,
-      repositories: ['api-service']
-    }
-  ];
-
+  
   useEffect(() => {
     const fetchContributors = async () => {
       try {
         setLoading(true);
-        // Try to fetch from API first
+        // Try to fetch from API
         try {
+          console.log('Fetching contributors data...');
+          
+          // Make a direct fetch call to diagnose the issue
+          const directResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://4.213.171.225'}/api/contributors`);
+          console.log('Direct fetch response status:', directResponse.status);
+          
+          if (directResponse.ok) {
+            const directData = await directResponse.json();
+            console.log('Direct fetch data:', directData);
+          }
+          
+          // Now try with the API client
           const data = await api.getContributors();
-          if (data && data.length > 0) {
-            setContributors(data);
+          console.log('API client response:', data);
+          
+          if (data && Array.isArray(data) && data.length > 0) {
+            // Process data - checking property names
+            const processedData = data.map(item => {
+              console.log('Processing contributor item:', item); // Add detailed logging
+              
+              // Create a typed contributor with robust fallbacks
+              const typedContributor: Contributor = {
+                id: item.id || 0,
+                github_id: item.github_id || 0,
+                username: item.username || 'Unknown',
+                avatar_url: item.avatar_url || '',
+                pr_count: item.pr_count || 0,
+                review_count: item.review_count || 0,
+                
+                // Handle all possible comment/command property names with robust fallbacks
+                comment_count: 
+                  item.comment_count !== undefined ? item.comment_count : 
+                  item.command_count !== undefined ? item.command_count : 0,
+                
+                repositories: Array.isArray(item.repositories) ? item.repositories : []
+              };
+              
+              console.log('Processed contributor:', typedContributor); // Log the processed item
+              return typedContributor;
+            });
+            
+            setContributors(processedData);
           } else {
-            // If API returns empty data, use mock data
-            setContributors(mockContributors);
+            console.error('No contributor data or invalid format:', data);
+            setError('No contributors found or invalid data format.');
           }
         } catch (apiError) {
-          console.warn('Error fetching from API, using mock data', apiError);
-          // On API error, use mock data
-          setContributors(mockContributors);
+          console.error('Error fetching from API:', apiError);
+          setError(`Failed to load contributors: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
         }
         setLoading(false);
       } catch (err) {
@@ -135,12 +120,12 @@ export default function ContributorsPage() {
     );
   }
 
-  // Prepare data for the contributor activity chart
+  // Prepare chart data
   const chartData = contributors.map(contributor => ({
     name: contributor.username,
     'Pull Requests': contributor.pr_count,
     'Reviews': contributor.review_count,
-    'Commands': contributor.command_count
+    'Comments': contributor.comment_count // Use the standardized property name
   }));
 
   return (
@@ -172,7 +157,7 @@ export default function ContributorsPage() {
               <Legend formatter={(value) => <span style={{ color: '#e5e7eb' }}>{value}</span>} />
               <Bar dataKey="Pull Requests" fill="#8b5cf6" />
               <Bar dataKey="Reviews" fill="#10b981" />
-              <Bar dataKey="Commands" fill="#f59e0b" />
+              <Bar dataKey="Comments" fill="#f59e0b" /> {/* Changed from Commands to Comments */}
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -200,7 +185,7 @@ export default function ContributorsPage() {
                   Reviews
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Commands
+                  Comments
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Repositories
@@ -236,7 +221,7 @@ export default function ContributorsPage() {
                     <div className="text-sm text-gray-300">{contributor.review_count}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-300">{contributor.command_count}</div>
+                    <div className="text-sm text-gray-300">{contributor.comment_count}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-300">

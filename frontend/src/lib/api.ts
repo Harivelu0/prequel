@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Define base URL for API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://4.213.171.225';
 
 // Create axios instance
 const apiClient = axios.create({
@@ -13,7 +13,6 @@ const apiClient = axios.create({
   // Set a reasonable timeout to avoid long waiting times
   timeout: 50000
 });
-
 
 // Add request/response interceptors for debugging
 apiClient.interceptors.request.use(request => {
@@ -26,8 +25,11 @@ apiClient.interceptors.response.use(
     console.log('API Response:', response.status);
     return response;
   },
+  error => {
+    console.error('API Error:', error.message, error.response?.status, error.response?.data);
+    return Promise.reject(error);
+  }
 );
-
 
 // Define interfaces for our data models
 export interface Repository {
@@ -51,7 +53,8 @@ export interface Contributor {
   created_at: string;
   pr_count: number;
   review_count: number;
-  command_count: number;
+  comment_count: number;
+  command_count?: number;
   repositories: string[];
 }
 
@@ -101,15 +104,15 @@ export interface ReviewComment {
   body: string;
   created_at: string;
   updated_at: string;
-  contains_command: boolean;
-  command_type: string | null;
+  contains_comment: boolean;
+  comment_type: string | null;
   author_name?: string;
 }
 
 export interface PRMetrics {
     pr_authors: [string, number][];
     active_reviewers: [string, number][];
-    comment_users: [string, number][];  
+    comment_users: [string, number][];
     stale_pr_count: number;
 }
 
@@ -149,148 +152,6 @@ export interface BranchProtectionRules {
   requireCodeOwners: boolean;
 }
 
-// Mock data for when API is not available
-const mockData = {
-  prMetrics: {
-    pr_authors: [['user1', 12] as [string, number], ['user2', 8] as [string, number], ['user3', 6] as [string, number], ['user4', 5] as [string, number], ['user5', 4] as [string, number]],
-    active_reviewers: [['reviewer1', 15] as [string, number], ['reviewer2', 12] as [string, number], ['reviewer3', 9] as [string, number], ['reviewer4', 7] as [string, number], ['reviewer5', 5] as [string, number]],
-    comment_users: [['user2', 10] as [string, number], ['user1', 9] as [string, number], ['user3', 7] as [string, number], ['user5', 6] as [string, number], ['user4', 5] as [string, number]],
-    stale_pr_count: 3
-  },
-  pullRequests: [
-    {
-      id: 1,
-      github_id: 12345,
-      repository_id: 1,
-      author_id: 1,
-      title: "Add new feature to dashboard",
-      number: 42,
-      state: "open",
-      html_url: "https://github.com/org/repo/pull/42",
-      created_at: "2023-03-15T10:00:00Z",
-      updated_at: "2023-03-20T15:30:00Z",
-      closed_at: null,
-      merged_at: null,
-      is_stale: true,
-      last_activity_at: "2023-03-20T15:30:00Z",
-      repository_name: "org/repo",
-      author_name: "developer1"
-    },
-    {
-      id: 2,
-      github_id: 12346,
-      repository_id: 1,
-      author_id: 2,
-      title: "Fix critical bug in authentication",
-      number: 43,
-      state: "open",
-      html_url: "https://github.com/org/repo/pull/43",
-      created_at: "2023-03-10T09:15:00Z",
-      updated_at: "2023-03-12T14:20:00Z",
-      closed_at: null,
-      merged_at: null,
-      is_stale: true,
-      last_activity_at: "2023-03-12T14:20:00Z",
-      repository_name: "org/repo",
-      author_name: "developer2"
-    }
-  ],
-  repositories: [
-    {
-      id: 1,
-      github_id: 12345,
-      name: 'api-service',
-      full_name: 'organization/api-service',
-      created_at: '2023-01-15T10:00:00Z',
-      pr_count: 24,
-      review_count: 48,
-      stale_pr_count: 2,
-      contributor_count: 5,
-      last_activity: '2023-04-01T14:30:00Z'
-    },
-    {
-      id: 2,
-      github_id: 12346,
-      name: 'frontend',
-      full_name: 'organization/frontend',
-      created_at: '2023-01-20T10:00:00Z',
-      pr_count: 36,
-      review_count: 72,
-      stale_pr_count: 1,
-      contributor_count: 8,
-      last_activity: '2023-04-02T10:15:00Z'
-    }
-  ],
-  contributors: [
-    {
-      id: 1,
-      github_id: 1001,
-      username: 'developer1',
-      avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=developer1',
-      created_at: '2023-01-10T10:00:00Z',
-      pr_count: 24,
-      review_count: 36,
-      command_count: 8,
-      repositories: ['api-service', 'frontend', 'core-lib']
-    },
-    {
-      id: 2,
-      github_id: 1002,
-      username: 'developer2',
-      avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=developer2',
-      created_at: '2023-01-12T10:00:00Z',
-      pr_count: 18,
-      review_count: 42,
-      command_count: 12,
-      repositories: ['frontend', 'docs']
-    }
-  ],
-  // Mock data for workflow monitoring
-  workflowMetrics: {
-    total_workflows: 25,
-    successful_workflows: 18,
-    failed_workflows: 7,
-    workflow_run_durations: [
-      ['CI Pipeline', 8.5],
-      ['Integration Tests', 12.3],
-      ['Build and Deploy', 15.7],
-      ['Code Analysis', 5.2],
-      ['Dependency Check', 3.8]
-    ] as [string, number][]
-  },
-  workflowRuns: [
-    {
-      id: 1,
-      workflow_name: 'CI Pipeline',
-      repository: 'organization/api-service',
-      status: 'success',
-      duration_seconds: 252,
-      triggered_by: 'developer1',
-      created_at: '2023-04-02T15:30:00Z'
-    },
-    {
-      id: 2,
-      workflow_name: 'Integration Tests',
-      repository: 'organization/frontend',
-      status: 'failure',
-      duration_seconds: 513,
-      triggered_by: 'developer2',
-      created_at: '2023-04-02T14:00:00Z'
-    }
-  ] as WorkflowRun[],
-  configuration: {
-    githubToken: '**********',
-    organizationName: '',
-    enableWorkflowMonitoring: true,
-    enableSlackNotifications: true,
-    SLACK_WEBHOOK_URL: 'https://hooks.slack.com/services/TXXXXXX/BXXXXXX/XXXXXXXX',
-    stalePrDays: 7,
-    slackApiToken: '',
-    slackChannel: ''
-  } as Configuration
-};
-
-
 // API functions for data fetching
 export const api = {
   // Health check
@@ -299,8 +160,8 @@ export const api = {
       const response = await apiClient.get('/');
       return response.data;
     } catch (error) {
-      console.warn('Backend API not available, using mock data');
-      return { status: 'healthy (mock)', timestamp: new Date().toISOString() };
+      console.warn('Backend API not available');
+      return { status: 'error', timestamp: new Date().toISOString() };
     }
   },
   
@@ -310,8 +171,13 @@ export const api = {
       const response = await apiClient.get('/api/metrics');
       return response.data;
     } catch (error) {
-      console.warn('Error fetching PR metrics, using mock data');
-      return mockData.prMetrics;
+      console.warn('Error fetching PR metrics');
+      return {
+        pr_authors: [],
+        active_reviewers: [],
+        comment_users: [],
+        stale_pr_count: 0
+      };
     }
   },
   
@@ -321,8 +187,8 @@ export const api = {
       const response = await apiClient.get('/api/stale-prs');
       return response.data;
     } catch (error) {
-      console.warn('Error fetching stale PRs, using mock data');
-      return mockData.pullRequests.filter(pr => pr.is_stale);
+      console.warn('Error fetching stale PRs');
+      return [];
     }
   },
   
@@ -332,65 +198,101 @@ export const api = {
       const response = await apiClient.get('/api/repositories');
       return response.data;
     } catch (error) {
-      console.warn('Error fetching repositories, using mock data');
-      return mockData.repositories;
+      console.warn('Error fetching repositories');
+      return [];
     }
   },
 
-  // Get contributors with metrics
-  getContributors: async (): Promise<Contributor[]> => {
-    try {
-      const response = await apiClient.get('/api/contributors');
-      return response.data;
-    } catch (error) {
-      console.warn('Error fetching contributors, using mock data');
-      return mockData.contributors;
+ // In your api.ts file, enhance the getContributors method with more debugging:
+
+getContributors: async (): Promise<Contributor[]> => {
+  try {
+    console.log('Fetching contributors data...');
+    
+    // Make a direct fetch call with detailed logging
+    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://4.213.171.225'}/api/contributors`;
+    console.log('Fetching from URL:', url);
+    
+    const directResponse = await fetch(url);
+    console.log('Direct fetch response status:', directResponse.status);
+    console.log('Direct fetch response headers:', Object.fromEntries([...directResponse.headers]));
+    
+    if (directResponse.ok) {
+      const directData = await directResponse.json();
+      console.log('Direct fetch raw data:', JSON.stringify(directData, null, 2));
+      
+      // Log each contributor's comments-related properties
+      if (Array.isArray(directData)) {
+        directData.forEach((contributor, index) => {
+          console.log(`Contributor ${index} (${contributor.username}) comments data:`, {
+            comment_count: contributor.comment_count,
+            command_count: contributor.command_count,
+            // Log all properties to help identify what's available
+            keys: Object.keys(contributor)
+          });
+        });
+      }
     }
-  },
-  
+    
+    // Now try with the API client as before
+    const response = await apiClient.get('/api/contributors');
+    console.log('API client full response:', response);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching contributors with detailed info:', error);
+    return [];
+  }
+},
   // Get pull requests with repository and author info
   getPullRequests: async (): Promise<PullRequest[]> => {
     try {
       const response = await apiClient.get('/api/pull-requests');
       return response.data;
     } catch (error) {
-      console.warn('Error fetching pull requests, using mock data');
-      return mockData.pullRequests;
+      console.warn('Error fetching pull requests');
+      return [];
     }
   },
 
-// Validate GitHub token
-validateGithubToken: async (token: string): Promise<{ valid: boolean }> => {
-  // Simple validation - just check if token looks reasonable
-  if (token && token.length > 30) {
-    return { valid: true };
-  }
-  return { valid: false };
-},
-
-// Get configuration
-getConfiguration: async (): Promise<Configuration> => {
-  try {
-    // Try local storage first
-    const storedConfig = localStorage.getItem('prequel-config');
-    if (storedConfig) {
-      return JSON.parse(storedConfig);
+  // Validate GitHub token
+  validateGithubToken: async (token: string): Promise<{ valid: boolean }> => {
+    // Simple validation - just check if token looks reasonable
+    if (token && token.length > 30) {
+      return { valid: true };
     }
-    
-    // Fall back to mock data
-    return mockData.configuration;
-  } catch (error) {
-    console.warn('Error fetching configuration, using mock data');
-    return mockData.configuration;
-  }
-},
+    return { valid: false };
+  },
+
+  // Get configuration
+  getConfiguration: async (): Promise<Configuration> => {
+    try {
+      // Try local storage first
+      const storedConfig = localStorage.getItem('prequel-config');
+      if (storedConfig) {
+        return JSON.parse(storedConfig);
+      }
+      
+      return {
+        enableWorkflowMonitoring: false,
+        enableSlackNotifications: false,
+        stalePrDays: 7
+      };
+    } catch (error) {
+      console.warn('Error fetching configuration');
+      return {
+        enableWorkflowMonitoring: false,
+        enableSlackNotifications: false,
+        stalePrDays: 7
+      };
+    }
+  },
 
   // Save configuration (initial setup)
   saveConfiguration: async (config: Partial<Configuration>): Promise<{ success: boolean }> => {
     try {
       const response = await apiClient.post('/api/config', {
         githubToken: config.githubToken,
-        organizationName: config.organizationName, // Note: using organizationName instead of organizationToken
+        organizationName: config.organizationName,
         slackWebhookUrl: config.slackWebhookUrl 
       });
       return { success: true };
@@ -400,7 +302,7 @@ getConfiguration: async (): Promise<Configuration> => {
     }
   },
 
-  //explicit repository creation method
+  // Explicit repository creation method
   createRepository: async (repo: {
     name: string;
     description?: string;
@@ -422,16 +324,21 @@ getConfiguration: async (): Promise<Configuration> => {
   getDashboardStats: async () => {
     try {
       const response = await apiClient.get('/api/stats');
+      console.log('Dashboard stats response:', response.data);
       return response.data;
     } catch (error) {
-      console.warn('Error fetching dashboard stats, using mock data');
-      // Return mock data or empty structure
+      console.warn('Error fetching dashboard stats:', error);
       return {
-        pr_metrics: mockData.prMetrics,
-        repositories: mockData.repositories,
-        contributors: mockData.contributors,
-        stale_prs: mockData.pullRequests.filter(pr => pr.is_stale),
-        recent_prs: mockData.pullRequests.slice(0, 10)
+        pr_metrics: {
+          pr_authors: [],
+          active_reviewers: [],
+          comment_users: [],
+          stale_pr_count: 0
+        },
+        repositories: [],
+        contributors: [],
+        stale_prs: [],
+        recent_prs: []
       };
     }
   },
@@ -442,8 +349,8 @@ getConfiguration: async (): Promise<Configuration> => {
       const response = await apiClient.post('/api/auth/update-configuration', config);
       return response.data;
     } catch (error) {
-      console.warn('Error updating configuration, using mock response');
-      return { success: true };
+      console.warn('Error updating configuration');
+      return { success: false };
     }
   },
 
@@ -453,8 +360,13 @@ getConfiguration: async (): Promise<Configuration> => {
       const response = await apiClient.get('/api/metrics/workflows');
       return response.data;
     } catch (error) {
-      console.warn('Error fetching workflow metrics, using mock data');
-      return mockData.workflowMetrics;
+      console.warn('Error fetching workflow metrics');
+      return {
+        total_workflows: 0,
+        successful_workflows: 0,
+        failed_workflows: 0,
+        workflow_run_durations: []
+      };
     }
   },
 
@@ -464,8 +376,8 @@ getConfiguration: async (): Promise<Configuration> => {
       const response = await apiClient.get('/api/workflow-runs');
       return response.data;
     } catch (error) {
-      console.warn('Error fetching workflow runs, using mock data');
-      return mockData.workflowRuns;
+      console.warn('Error fetching workflow runs');
+      return [];
     }
   },
 
@@ -483,8 +395,8 @@ getConfiguration: async (): Promise<Configuration> => {
       });
       return response.data;
     } catch (error) {
-      console.warn('Error setting up branch protection, using mock response');
-      return { success: true };
+      console.warn('Error setting up branch protection');
+      return { success: false };
     }
   }
 };

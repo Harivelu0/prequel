@@ -18,7 +18,7 @@ apt upgrade -y
 
 # Install required dependencies
 echo "Installing dependencies..."
-apt install -y nginx python3-pip python3-venv git ufw unixodbc-dev curl flask_cors
+apt install -y nginx python3-pip python3-venv git ufw unixodbc-dev curl python3-dev build-essential
 
 # Install Microsoft ODBC drivers for SQL Server
 echo "Installing Microsoft ODBC drivers..."
@@ -78,6 +78,16 @@ pip install -r requirements.txt || echo "Failed to install from requirements.txt
 # Install gunicorn explicitly to ensure it's available
 echo "Installing gunicorn explicitly..."
 pip install gunicorn
+
+# Ensure Flask-CORS is properly installed with sudo permissions
+echo "Ensuring Flask-CORS is properly installed..."
+sudo -H $APP_DIR/backend/venv/bin/pip install flask-cors
+sudo -H $APP_DIR/backend/venv/bin/python -c "import flask_cors" || {
+    echo "Flask-CORS import test failed, fixing permissions and reinstalling..."
+    sudo chown -R ${CURRENT_USER}:${CURRENT_USER} $APP_DIR/backend/venv
+    source $APP_DIR/backend/venv/bin/activate
+    pip install -U flask-cors
+}
 
 # Fallback for package installation if requirements.txt fails
 if [ $? -ne 0 ]; then
