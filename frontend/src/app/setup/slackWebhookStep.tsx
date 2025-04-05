@@ -191,23 +191,9 @@ const SlackWebhookStep: React.FC<SlackWebhookStepProps> = ({
               <div className="flex items-center">
                 <CogIcon className="h-5 w-5 text-indigo-400 mr-2" />
                 <label htmlFor="stale-days" className="block text-lg font-medium text-gray-300">
-                  Stale PR Threshold (Days)
+                Stale PR Threshold (Default 7 days)
                 </label>
               </div>
-              <div className="mt-2 max-w-xs">
-                <input
-                  id="stale-days"
-                  type="number"
-                  min="1"
-                  max="30"
-                  className="w-full px-4 py-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={stalePrDays}
-                  onChange={(e) => setStalePrDays(parseInt(e.target.value) || 7)}
-                />
-              </div>
-              <p className="text-gray-400 text-sm mt-2">
-                Number of days of inactivity before a PR is considered stale.
-              </p>
             </div>
             
             <div className="bg-gray-700/30 p-4 rounded-lg">

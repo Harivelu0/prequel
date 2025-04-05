@@ -6,9 +6,288 @@ import LoadingSpinner from '@/components/loading-spinner';
 import { 
   KeyIcon,
   ChatBubbleLeftRightIcon,
-  CogIcon,
-  CheckIcon
+  CheckIcon,
+  XMarkIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
+import { ChevronRightIcon } from '@heroicons/react/24/solid';
+
+// Imported from your existing components
+const GithubTokenInstructions = ({ onClose }: { onClose: () => void }) => {
+  const steps = [
+    {
+      number: 1,
+      title: "Go to GitHub Settings",
+      content: (
+        <p className="mt-1 text-gray-300">
+          <a 
+            href="https://github.com/settings/tokens" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-indigo-400 hover:text-indigo-300 underline"
+          >
+            Click here to go directly to GitHub Token Settings
+          </a>
+        </p>
+      )
+    },
+    {
+      number: 2,
+      title: "Access Developer Settings",
+      content: (
+        <p className="mt-1 text-gray-300">
+          Scroll to the bottom of the sidebar and click on "Developer settings".
+        </p>
+      )
+    },
+    {
+      number: 3,
+      title: "Generate a Personal Access Token",
+      content: (
+        <p className="mt-1 text-gray-300">
+          Select "Personal access tokens" → "Tokens (classic)" → "Generate new token" → "Generate new token (classic)".
+        </p>
+      )
+    },
+    {
+      number: 4,
+      title: "Set Token Permissions",
+      content: (
+        <>
+          <p className="mt-1 text-gray-300">
+            Select the following scopes:
+          </p>
+          <ul className="mt-2 space-y-1 text-gray-300 list-disc list-inside">
+            <li><span className="font-medium">repo</span> - Full control of private repositories</li>
+            <li><span className="font-medium">admin:org</span> - Full control of organizations and teams</li>
+            <li><span className="font-medium">admin:hook</span> - Full control of repository hooks</li>
+          </ul>
+        </>
+      )
+    },
+    {
+      number: 5,
+      title: "Generate and Copy Token",
+      content: (
+        <p className="mt-1 text-gray-300">
+          Click "Generate token" at the bottom of the page. <span className="text-red-300 font-medium">Make sure to copy your new token immediately</span> - you won't be able to see it again!
+        </p>
+      )
+    }
+  ];
+
+  return (
+    <div className="p-6 max-h-[80vh] overflow-y-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-white">Creating a GitHub Personal Access Token</h2>
+        <button 
+          onClick={onClose}
+          className="text-gray-400 hover:text-white"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+      </div>
+      
+      <p className="text-gray-300 mb-6">Follow these steps to generate a token with the required permissions.</p>
+      
+      {/* Step-by-step instructions */}
+      <div className="space-y-6 mb-8">
+        {steps.map((step) => (
+          <div className="flex" key={step.number}>
+            <div className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-gray-300">
+              {step.number}
+            </div>
+            <div className="ml-4">
+              <h3 className="text-lg font-medium text-white">{step.title}</h3>
+              {step.content}
+            </div>
+          </div>
+        ))}
+
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <InformationCircleIcon className="h-6 w-6 text-blue-400" />
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-blue-300">
+              Remember that personal access tokens are like passwords. Never share them publicly and consider setting an expiration date for added security.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex justify-end mt-6">
+        <button
+          type="button"
+          className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          onClick={onClose}
+        >
+          Close Instructions
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const SlackWebhookInstructions = ({ onClose }: { onClose: () => void }) => {
+  const slackInstructions = [
+    {
+      number: 1,
+      title: "Sign in to your Slack account",
+      content: (
+        <p className="mt-1 text-gray-300">
+          Log in to your Slack workspace where you want to receive notifications.
+        </p>
+      )
+    },
+    {
+      number: 2,
+      title: "Go to Slack Apps page",
+      content: (
+        <p className="mt-1 text-gray-300">
+          <a 
+            href="https://api.slack.com/apps/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-indigo-400 hover:text-indigo-300 underline"
+          >
+            Visit the Slack API Apps page
+          </a>
+        </p>
+      )
+    },
+    {
+      number: 3,
+      title: "Create an App",
+      content: (
+        <p className="mt-1 text-gray-300">
+          Click the "Create an App" button at the top right of the page.
+        </p>
+      )
+    },
+    {
+      number: 4,
+      title: "Select 'From scratch'",
+      content: (
+        <p className="mt-1 text-gray-300">
+          In the modal dialog, choose "From scratch" to start with a blank app.
+        </p>
+      )
+    },
+    {
+      number: 5,
+      title: "Name and select workspace",
+      content: (
+        <p className="mt-1 text-gray-300">
+          Enter an app name (like "PR Notifications") and select your workspace from the dropdown menu.
+        </p>
+      )
+    },
+    {
+      number: 6,
+      title: "Configure Incoming Webhooks",
+      content: (
+        <p className="mt-1 text-gray-300">
+          From the left sidebar menu, find and click on "Incoming Webhooks".
+        </p>
+      )
+    },
+    {
+      number: 7,
+      title: "Activate Webhooks",
+      content: (
+        <p className="mt-1 text-gray-300">
+          Toggle the switch to "On" to activate incoming webhooks for your app.
+        </p>
+      )
+    },
+    {
+      number: 8,
+      title: "Add webhook to workspace",
+      content: (
+        <p className="mt-1 text-gray-300">
+          Scroll down and click the "Add New Webhook to Workspace" button.
+        </p>
+      )
+    },
+    {
+      number: 9,
+      title: "Select channel",
+      content: (
+        <p className="mt-1 text-gray-300">
+          Choose which channel should receive the PR notifications from the dropdown menu.
+        </p>
+      )
+    },
+    {
+      number: 10,
+      title: "Allow and copy webhook URL",
+      content: (
+        <p className="mt-1 text-gray-300">
+          Click "Allow", then copy the webhook URL that appears and paste it below.
+        </p>
+      )
+    }
+  ];
+
+  return (
+    <div className="p-6 max-h-[80vh] overflow-y-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-white">Setting Up Slack Integration</h2>
+        <button 
+          onClick={onClose}
+          className="text-gray-400 hover:text-white"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+      </div>
+      
+      <p className="text-gray-300 mb-6">Create a Slack webhook to receive PR notifications.</p>
+      
+      {/* Slack webhook instructions */}
+      <div className="bg-gray-700/30 p-6 rounded-lg mb-6">
+        <h3 className="text-lg font-medium text-white mb-4">How to Create a Slack Webhook</h3>
+        
+        <div className="space-y-6">
+          {slackInstructions.map((step) => (
+            <div className="flex" key={step.number}>
+              <div className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-gray-300">
+                {step.number}
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-white">{step.title}</h3>
+                {step.content}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="flex justify-end mt-6">
+        <button
+          type="button"
+          className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          onClick={onClose}
+        >
+          Close Instructions
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Modal component
+const Modal = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75">
+      <div className="bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+        {children}
+      </div>
+    </div>
+  );
+};
 
 export default function SettingsPage() {
   const [githubToken, setGithubToken] = useState('');
@@ -20,6 +299,10 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [organizationName, setOrganizationName] = useState('');
+  
+  // State for modals
+  const [showGithubInstructions, setShowGithubInstructions] = useState(false);
+  const [showSlackInstructions, setShowSlackInstructions] = useState(false);
   
   // Fetch existing settings on page load
   useEffect(() => {
@@ -48,7 +331,7 @@ export default function SettingsPage() {
     fetchSettings();
   }, []);
   
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     setSaving(true);
@@ -58,7 +341,7 @@ export default function SettingsPage() {
     try {
       // Only update if there's a new token (not the placeholder)
       const tokenToSave = githubToken === '••••••••••••••••••••' ? null : githubToken;
-      const orgNameToSave = organizationName === ''? null : organizationName;
+      const orgNameToSave = organizationName === '' ? null : organizationName;
       
       // Only update if there's a new webhook (not the placeholder)
       const webhookToSave = slackWebhookUrl === '••••••••••••••••••••' ? null : slackWebhookUrl;
@@ -115,9 +398,19 @@ export default function SettingsPage() {
                   value={githubToken}
                   onChange={(e) => setGithubToken(e.target.value)}
                 />
-                <p className="text-gray-400 text-xs mt-1">
-                  Leave as is if you don't want to change your token.
-                </p>
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-gray-400 text-xs">
+                    Leave as is if you don't want to change your token.
+                  </p>
+                  <button
+                    type="button"
+                    className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center"
+                    onClick={() => setShowGithubInstructions(true)}
+                  >
+                    <InformationCircleIcon className="h-4 w-4 mr-1" />
+                    How to create a GitHub token
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -161,14 +454,24 @@ export default function SettingsPage() {
                       value={slackWebhookUrl}
                       onChange={(e) => setSlackWebhookUrl(e.target.value)}
                     />
-                    <p className="text-gray-400 text-xs mt-1">
-                      Leave as is if you don't want to change your webhook URL.
-                    </p>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-gray-400 text-xs">
+                        Leave as is if you don't want to change your webhook URL.
+                      </p>
+                      <button
+                        type="button"
+                        className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center"
+                        onClick={() => setShowSlackInstructions(true)}
+                      >
+                        <InformationCircleIcon className="h-4 w-4 mr-1" />
+                        How to create a Slack webhook
+                      </button>
+                    </div>
                   </div>
 
                   <div>
                     <label htmlFor="stale-days" className="block text-gray-300 mb-2">
-                      Stale PR Threshold (Default 7 Days)
+                      Stale PR Threshold (Default 7 days) 
                     </label>
                   </div>
 
@@ -181,20 +484,9 @@ export default function SettingsPage() {
                       </li>
                       <li className="flex items-start">
                         <CheckIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                        Stale pull request alerts (daily check)
+                        Stale pull request alerts (Weekly check)
                       </li>
                     </ul>
-                  </div>
-
-                  <div className="pt-2">
-                    <a 
-                      href="https://api.slack.com/messaging/webhooks" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-indigo-400 hover:text-indigo-300 text-sm"
-                    >
-                      Need help setting up a Slack webhook?
-                    </a>
                   </div>
                 </div>
               )}
@@ -226,34 +518,14 @@ export default function SettingsPage() {
         </form>
       </div>
       
-      {/* Help Section */}
-      <div className="bg-gray-800 rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">How to Update Your Configuration</h2>
-        
-        <div className="space-y-4 text-gray-300">
-          <div>
-            <h3 className="font-medium text-white">GitHub Token</h3>
-            <p className="mt-1">
-              If you need to generate a new GitHub token, follow the same steps as during setup. Enter your new token here to update.
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="font-medium text-white">Slack Webhook</h3>
-            <p className="mt-1">
-              To create a new Slack webhook or update an existing one, go to your Slack workspace's App management page.
-              You can create a new webhook or update an existing one for a different channel.
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="font-medium text-white">Need Help?</h3>
-            <p className="mt-1">
-              Contact your administrator or check our documentation for more information on configuring Prequel.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Instruction Modals */}
+      <Modal isOpen={showGithubInstructions} onClose={() => setShowGithubInstructions(false)}>
+        <GithubTokenInstructions onClose={() => setShowGithubInstructions(false)} />
+      </Modal>
+      
+      <Modal isOpen={showSlackInstructions} onClose={() => setShowSlackInstructions(false)}>
+        <SlackWebhookInstructions onClose={() => setShowSlackInstructions(false)} />
+      </Modal>
     </div>
   );
 }

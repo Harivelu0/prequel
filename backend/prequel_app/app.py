@@ -201,11 +201,23 @@ def create_repository():
         )
         
         if not success:
+            if "branch protection" in str(details.get('error', '')).lower() or \
+               "could not resolve to a repository" in str(details.get('error', '')).lower():
+                # Repository was likely created, return partial success
+                logger.warning(f"Repository likely created but branch protection failed: {details.get('error')}")
+                return jsonify({
+                    "message": "Repository created but branch protection failed",
+                    "repository": {
+                        "name": repo_name,
+                        "full_name": f"{organization}/{repo_name}",
+                        "url": f"https://github.com/{organization}/{repo_name}"
+                    },
+                    "warning": "Branch protection could not be applied"
+                }), 200
+            
+            # Complete failure, return error
             logger.error(f"Failed to create repository: {details.get('error')}")
-            return jsonify({
-                "error": "Failed to create repository", 
-                "details": details.get('error')
-            }), 500
+            return jsonify({"error": f"Failed to create repository: {details.get('error')}"}), 500
         
         # Add repository to database
         try:

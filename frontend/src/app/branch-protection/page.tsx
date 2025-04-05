@@ -8,7 +8,7 @@ export default function BranchProtectionPage() {
   // For repository creation
   const [repoName, setRepoName] = useState('');
   const [repoDescription, setRepoDescription] = useState('');
-  const [repoVisibility, setRepoVisibility] = useState<'public' | 'private'>('private');
+  const [repoVisibility, setRepoVisibility] = useState<'public' | 'private'>('public');
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [createSuccess, setCreateSuccess] = useState(false);
@@ -54,8 +54,8 @@ const handleCreateRepo = async (e: React.FormEvent) => {
       setCreateSuccess(true);
       
       // Check if there was a partial success (repo created but branch protection failed)
-      if (result.error || result.warning) {
-        setCreateError(`Repository created, but there was an issue with branch protection: ${result.error || result.warning}`);
+      if (!result.success) {
+        setCreateError('Repository created, but there was an issue with branch protection.');
       }
       
       // Reset success message after a few seconds
@@ -118,8 +118,8 @@ const handleCreateRepo = async (e: React.FormEvent) => {
                 value={repoVisibility}
                 onChange={(e) => setRepoVisibility(e.target.value as 'public' | 'private')}
               >
-                <option value="private">Private</option>
                 <option value="public">Public</option>
+                <option value="private">Private</option>
               </select>
             </div>
           </div>

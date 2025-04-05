@@ -154,8 +154,8 @@ export default function StalePRsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">Stale Pull Requests</h1>
-        <p className="text-gray-600">Pull requests with no activity in the last 7 days</p>
+        <h1 className="text-2xl font-bold text-white-800">Stale Pull Requests</h1>
+        <p className="text-white-400">Pull requests with no activity in the last 7 days</p>
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -164,9 +164,6 @@ export default function StalePRsPage() {
             <h2 className="text-lg font-semibold text-gray-800">
               {mockStalePRs.length} Stale Pull Requests
             </h2>
-            <button className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-              Notify All
-            </button>
           </div>
         </div>
         
@@ -239,9 +236,6 @@ export default function StalePRsPage() {
                       >
                         View
                       </a>
-                      <button className="text-indigo-600 hover:text-indigo-900">
-                        Notify
-                      </button>
                     </td>
                   </tr>
                 ))}

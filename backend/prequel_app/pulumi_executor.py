@@ -119,7 +119,37 @@ class PulumiExecutor:
             True if successful, False otherwise
         """
         try:
-            # Run the setup-config script
+            # First, check if we have a stack selected and create/select one if needed
+            stack_name = "dev-prequel"  # Your default stack name
+            
+            # Check for existing stacks
+            logger.info(f"Checking for Pulumi stack: {stack_name}")
+            check_stack_cmd = ["pulumi", "stack", "ls"]
+            success, stdout, stderr = self.run_command(check_stack_cmd)
+            
+            if not success:
+                logger.error(f"Failed to list Pulumi stacks: {stderr}")
+                return False
+                
+            # Check if our stack exists in the output
+            if f"{stack_name}" in stdout:
+                # Stack exists, select it
+                logger.info(f"Selecting existing stack: {stack_name}")
+                select_cmd = ["pulumi", "stack", "select", stack_name]
+                success, stdout, stderr = self.run_command(select_cmd)
+                if not success:
+                    logger.error(f"Failed to select stack: {stderr}")
+                    return False
+            else:
+                # Stack doesn't exist, create it
+                logger.info(f"Creating new stack: {stack_name}")
+                init_cmd = ["pulumi", "stack", "init", stack_name]
+                success, stdout, stderr = self.run_command(init_cmd)
+                if not success:
+                    logger.error(f"Failed to create stack: {stderr}")
+                    return False
+            
+            # Now that we have a stack selected, run the setup script
             script_path = os.path.join(self.infrastructure_dir, "scripts", "setup_config.sh")
             
             # Verify the script exists
@@ -155,7 +185,7 @@ class PulumiExecutor:
     
     def create_repository(self, name: str, org: str, description: str = "", visibility: str = "private", branch: str = "main") -> Tuple[bool, Dict]:
         """
-        Create a new GitHub repository with branch protection
+        Create a new GitHub repository directly via GitHub API, without Pulumi stack updates
         
         Args:
             name: Repository name
@@ -170,17 +200,11 @@ class PulumiExecutor:
         try:
             logger.info(f"Creating repository: {org}/{name} (Visibility: {visibility}, Branch: {branch})")
             
-            # Check if the index.ts file exists
-            index_ts_path = os.path.join(self.infrastructure_dir, "src", "index.ts")
-            if not os.path.exists(index_ts_path):
-                logger.error(f"index.ts not found at {index_ts_path}")
-                return False, {"error": f"index.ts not found at {index_ts_path}"}
-            
-            # Construct the command to run the script
+            # Use the direct repository creation command
             command = [
                 "npx", "ts-node", 
                 os.path.join("src", "index.ts"), 
-                "setup-repo",
+                "create-repo-only",  # This is the key change
                 "--name", name,
                 "--org", org,
                 "--description", description,
@@ -192,13 +216,33 @@ class PulumiExecutor:
             
             if success:
                 logger.info(f"Repository {org}/{name} created successfully")
-                logger.debug(f"Command output: {stdout}")
                 
-                # Try to parse output for repository details
+                # Try to parse the JSON output from the command
+                try:
+                    repo_details = json.loads(stdout)
+                    details = {
+                        "name": repo_details.get("name", name),
+                        "organization": org,
+                        "url": repo_details.get("html_url", f"https://github.com/{org}/{name}")
+                    }
+                except:
+                    # Fallback if JSON parsing fails
+                    details = {
+                        "name": name,
+                        "organization": org,
+                        "url": f"https://github.com/{org}/{name}"
+                    }
+                    
+                return True, details
+                
+            # Check if there was a warning about branch protection but repo was created 
+            elif stderr and ("branch protection requires github pro" in stderr.lower()):
+                logger.warning(f"Repository created but branch protection failed (requires GitHub Pro)")
                 details = {
                     "name": name,
                     "organization": org,
-                    "url": f"https://github.com/{org}/{name}"
+                    "url": f"https://github.com/{org}/{name}",
+                    "warning": "Branch protection requires GitHub Pro or public repositories"
                 }
                 return True, details
             else:

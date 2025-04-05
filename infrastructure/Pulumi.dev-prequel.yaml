@@ -1,21 +1,20 @@
 config:
   azure-native:clientId: a31cc29f-2efb-47e7-8871-63e15650fb9d
   azure-native:clientSecret:
-    secure: AAABACsSLIoIO1TsVQUBOYmno0jUgVUsqMmfjg/xQB8EcuKnPved55XP+vn4eLhEY6T7mTKULkraWjRhtpGiqE4YZgR2Zp5x
+    secure: AAABAKdaQj9+studYXQe+ZWWDWdSfXAtxAgqxAD8vZLiIteMzLrlDMIPQR9TQxfH19kQhdNhqMucsGJRxEIhA48VinD46k20
   azure-native:tenantId: a5bd300c-c3b3-41d8-87e0-1f5c8d364af3
   azure-native:subscriptionId: 98c61d81-12c6-4aa2-8ac6-8dc7b8f5e834
   prequel:githubToken:
-    secure: AAABAHztaog0Rz5V5S5eQdY2LjROay4v9lYOXss8Yc1PxDWWtGac/g5XSFU9Cn+LjTy6GtQT3jurPLTk4WHub55L3nWGKkJQqO1WCTk+8BEgLO+9UDCNYetUBkFxwx+zJoLiy+KTKKcjPanXpD5bNbWdtFXAQBANG1qEJFs=
+    secure: AAABAM+vW1VyVnIX7LDp0AFViad2fCinqnFEBGvuTmSq4Gn9Z5PC/NV0NqCU+KAZrPsMx+0W7e5OxvAQgUqTwCUsbgcSqpRqIDGucXsJxGhCkDbiEx8x+Fsi1W7f3yRw5C+0gzK5eX4oQajFjw3nY2UyQLWMp2eDdB86eBU=
   prequel:githubWebhookSecret:
-    secure: AAABALKTaJ362K5nsXpnbPGK7oqWXLnjqDX65jZEmCQAO2odqCU1ah80qiT8xXnjAYj6RGQv+vh3/HNho+PPNK4UNln+IQbT
+    secure: AAABAMaD4Q7lu6U2gpaQeNj/sP7kUyvmpmapTLcWSlgKcUjzfZ2cuFjfYoINKv96rADPyL5qHd07GEKXQEqtS6sWcovNrS/6
   prequel:slackWebhookUrl:
-    secure: AAABAAJLjfDKz57AHx9s4rNanOxbFiC0oKy9NaYK7kSWFfjge8INNPAsmsbuT4XrQi825ZUh+3mHiGEeorObAhLxRrOWxiGGUuuQHwelUxHt1K17C62pX1LPAs32lt6WXRic3y35UfU1Tsbqq00rK3s=
+    secure: AAABACt6ZJ7hsqRdTmuIw3ikHnt7AAoyXPaPWncT5F7vDZByI6BgSmF7g6J5OfQBkWmUfUybId/I41/9yD50njUW70QCZ7hHA84JCNyRxwFBG9TP6jCf1a3iy7wrp8oolcW2YqijKKxKUwGBi/E8kjY=
   prequel:vmAdminUsername: vmadmin
   prequel:vmAdminPassword:
-    secure: AAABANRIjvOVghn8Lh9j0fzUQlvFYp2JZ2S4/klP7xgeaF8Jb4Hiq4pm6T/Rk7+EBviBkSe8bLw=
+    secure: AAABADwmfFTjTImGM3iNQlTwCdTLjR0OiSH/j+koal/bNqE0WRnc2ksmwW7XpYDKGhwnv/cVwiM=
   prequel:sqlAdminUsername: prequel_admin
   prequel:sqlAdminPassword:
-    secure: AAABAOD8cIlsOMASs9MwQ1V4jhdFHfOZ1IW6yTL4tSbD1M+qzMamn/wnRgdgnEj5RnKF1Hk3WzY=
+    secure: AAABAAIYyubBMe4SJ0iDBUPBOdEZQSaf3lGC5ekBgvG28bmuUR6cYd709gjcFb6IB9u+MjIUF6Y=
   prequel:location: Central India
   prequel:organizationName: Shetchuko
-  prequel:webhookUrl: http://4.240.61.37

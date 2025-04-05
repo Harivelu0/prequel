@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 
 // Import modular components
@@ -10,6 +11,7 @@ import GithubConfigStep from './githubConfigStep';
 import SlackWebhookStep from './slackWebhookStep';
 
 export default function SetupPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [githubToken, setGithubToken] = useState('');
   const [enableSlackNotifications, setEnableSlackNotifications] = useState(false);
@@ -74,7 +76,7 @@ export default function SetupPage() {
       // Save configuration using new endpoint
       await api.saveConfiguration({
         githubToken,
-        organizationName: organizationToken, // Change to organizationName
+        organizationName: organizationToken,
         enableSlackNotifications,
         slackWebhookUrl: enableSlackNotifications ? slackWebhookUrl : '',
         stalePrDays: enableSlackNotifications ? stalePrDays : 7
@@ -82,12 +84,11 @@ export default function SetupPage() {
   
       // Mark onboarding as completed
       localStorage.setItem('onboardingCompleted', 'true');
-      setSetupSuccess(true);
       
-      // Reload page after successful setup
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // Trigger redirect to dashboard
+      window.dispatchEvent(new CustomEvent('setup-completed'));
+      
+      setSetupSuccess(true);
     } catch (err) {
       console.error('Error completing setup:', err);
       setError('Failed to save configuration. Please try again.');

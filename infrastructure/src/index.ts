@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import * as dotenv from 'dotenv';
 import { RepositoryConfig, standardDefaults } from './config/templates/standard';
 import { deployRepositoryConfig, deployMultipleRepositories } from './automation/deployer';
+import { createRepositoryDirectly } from './utils/github-api'; // Add this import
 
 // Load environment variables
 dotenv.config();
@@ -59,6 +60,74 @@ program
     } catch (error) {
       console.error('Error setting up repository:', error);
       process.exit(1);
+    }
+  });
+
+// Command to create repository directly (without Pulumi)
+program
+  .command('create-repo-only')
+  .description('Create a repository directly using GitHub API (no Pulumi)')
+  .requiredOption('-n, --name <name>', 'Repository name')
+  .requiredOption('-o, --org <organization>', 'GitHub organization name')
+  .option('-d, --description <description>', 'Repository description', '')
+  .option('-v, --visibility <visibility>', 'Repository visibility (public, private)', 'private')
+  .option('-b, --branch <branch>', 'Default branch name', 'main')
+  .action(async (options) => {
+    try {
+      // Get GitHub token from Pulumi config or environment
+      let token: string;
+      const githubToken = process.env.GITHUB_TOKEN;
+      
+      if (!githubToken) {
+        // Try to get token from Pulumi config
+        const { spawnSync } = require('child_process');
+        const result = spawnSync('pulumi', ['config', 'get', 'githubToken', '--show-secrets'], { 
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'pipe'] 
+        });
+        
+        if (result.status !== 0 || !result.stdout) {
+          console.error('Error: GitHub token not found in environment or Pulumi config');
+          console.error('Set GITHUB_TOKEN environment variable or configure in Pulumi');
+          process.exit(1);
+        }
+        
+        token = result.stdout.trim();
+      } else {
+        token = githubToken;
+      }
+      
+      console.log(`Creating repository ${options.org}/${options.name} directly via GitHub API...`);
+      
+      const repo = await createRepositoryDirectly({
+        name: options.name,
+        org: options.org,
+        token: token,
+        description: options.description,
+        visibility: options.visibility as 'public' | 'private',
+        defaultBranch: options.branch
+      });
+      
+      console.log('Repository created successfully!');
+      console.log(JSON.stringify({
+        name: repo.name,
+        full_name: repo.full_name,
+        html_url: repo.html_url
+      }, null, 2));
+      
+    } catch (error: any) {  // Type error as 'any'
+      if (error && error.message && (
+        typeof error.message === 'string' &&
+        (error.message.includes('branch protection') ||
+        error.message.includes('GitHub Pro'))
+      )) {
+        console.log('WARNING: Repository created but branch protection requires GitHub Pro or a public repository');
+        // Still exit with success code as the repository was created
+        process.exit(0);
+      } else {
+        console.error('Error creating repository:', error && error.message ? error.message : error);
+        process.exit(1);
+      }
     }
   });
 

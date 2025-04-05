@@ -26,16 +26,6 @@ apiClient.interceptors.response.use(
     console.log('API Response:', response.status);
     return response;
   },
-  error => {
-    console.error('API Error:', error.message);
-    if (error.response) {
-      console.error('Response data:', error.response.data);
-      console.error('Response status:', error.response.status);
-    } else if (error.request) {
-      console.error('No response received');
-    }
-    return Promise.reject(error);
-  }
 );
 
 

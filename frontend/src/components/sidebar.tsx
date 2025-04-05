@@ -1,5 +1,5 @@
 'use client';
-
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -29,7 +29,17 @@ export default function Sidebar() {
     <div className="w-64 bg-gray-800 shadow-md flex flex-col">
       {/* Logo and App Name */}
       <div className="px-6 py-6">
-        <h1 className="text-2xl font-bold text-indigo-400">Prequel</h1>
+         <header className="bg-gray-800/50 py-6 px-2 border-b border-gray-700">
+                <div className="flex items-center space-x-3">
+                    <Image 
+                      src="/team-analytics.svg" 
+                      alt="Prequel Logo" 
+                      width={40} 
+                      height={40} 
+                    />
+                    <h1 className="text-2xl font-bold text-white">Prequel</h1>
+                  </div>
+              </header>
         <p className="text-sm text-gray-400">GitHub Workflow Monitor</p>
       </div>
       
