@@ -16,8 +16,6 @@ interface DashboardCardProps {
   title: string;
   value: number;
   icon: IconType;
-  trend?: number;
-  trendDirection?: 'up' | 'down';
 }
 
 const iconMap = {
@@ -31,8 +29,6 @@ export default function DashboardCard({
   title, 
   value, 
   icon, 
-  trend, 
-  trendDirection = 'up'
 }: DashboardCardProps) {
   const Icon = iconMap[icon];
   
@@ -47,21 +43,6 @@ export default function DashboardCard({
           <p className="text-2xl font-semibold text-gray-100">{value}</p>
         </div>
       </div>
-      
-      {trend && (
-        <div className="mt-4 flex items-center">
-          {trendDirection === 'up' ? (
-            <ArrowUpIcon className="h-4 w-4 text-green-500" />
-          ) : (
-            <ArrowDownIcon className="h-4 w-4 text-red-500" />
-          )}
-          <span className={`text-sm ml-1 ${
-            trendDirection === 'up' ? 'text-green-500' : 'text-red-500'
-          }`}>
-            {trend}% from last week
-          </span>
-        </div>
-      )}
     </div>
   );
 }

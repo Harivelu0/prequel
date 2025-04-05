@@ -34,7 +34,7 @@ export default function SettingsPage() {
         setGithubToken('••••••••••••••••••••');  // Don't show actual token for security
         setOrganizationName(settings.organizationName ? '••••••••••••••••••••' : '');
         setEnableSlackNotifications(settings.enableSlackNotifications);
-        setSlackWebhookUrl(settings.SLACK_WEBHOOK_URL ? '••••••••••••••••••••' : '');
+        setSlackWebhookUrl(settings.slackWebhookUrl? '••••••••••••••••••••' : '');
         setStalePrDays(settings.stalePrDays || 7);
         
       } catch (err) {
@@ -67,7 +67,7 @@ export default function SettingsPage() {
         githubToken: tokenToSave ?? undefined,
         organizationName: orgNameToSave ?? undefined, 
         enableSlackNotifications,
-        SLACK_WEBHOOK_URL: webhookToSave ?? undefined,
+        slackWebhookUrl: webhookToSave ?? undefined,
         stalePrDays
       });
       
@@ -119,23 +119,6 @@ export default function SettingsPage() {
                   Leave as is if you don't want to change your token.
                 </p>
               </div>
-              
-              <div className="mt-4">
-                <label htmlFor="org-token" className="block text-gray-300 mb-2">
-                  Organization Token (Optional)
-                </label>
-                <input
-                  id="org-token"
-                  type="password"
-                  className="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter new organization token to update"
-                  value={organizationName}
-                  onChange={(e) => setOrganizationName(e.target.value)}
-                />
-                <p className="text-gray-400 text-xs mt-1">
-                  Leave as is if you don't want to change your organization token.
-                </p>
-              </div>
             </div>
           </div>
 
@@ -185,20 +168,8 @@ export default function SettingsPage() {
 
                   <div>
                     <label htmlFor="stale-days" className="block text-gray-300 mb-2">
-                      Stale PR Threshold (Days)
+                      Stale PR Threshold (Default 7 Days)
                     </label>
-                    <input
-                      id="stale-days"
-                      type="number"
-                      min="1"
-                      max="30"
-                      className="w-full max-w-xs px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      value={stalePrDays}
-                      onChange={(e) => setStalePrDays(parseInt(e.target.value) || 7)}
-                    />
-                    <p className="text-gray-400 text-xs mt-1">
-                      Number of days of inactivity before a PR is considered stale.
-                    </p>
                   </div>
 
                   <div className="bg-gray-700/30 p-4 rounded-md">
@@ -207,10 +178,6 @@ export default function SettingsPage() {
                       <li className="flex items-start">
                         <CheckIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
                         New pull request created
-                      </li>
-                      <li className="flex items-start">
-                        <CheckIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                        Changes requested on pull request
                       </li>
                       <li className="flex items-start">
                         <CheckIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
@@ -231,29 +198,6 @@ export default function SettingsPage() {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Notifications Section (optional, for future expansion) */}
-          <div className="pt-4 border-t border-gray-700">
-            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
-              <CogIcon className="h-5 w-5 mr-2 text-indigo-400" />
-              Notification Settings
-            </h2>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-gray-300">Daily Stale PR Check</h3>
-                  <p className="text-gray-400 text-sm">Automatically check for stale PRs once per day</p>
-                </div>
-                <div className="flex-shrink-0">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" value="" className="sr-only peer" checked disabled />
-                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                  </label>
-                </div>
-              </div>
             </div>
           </div>
 

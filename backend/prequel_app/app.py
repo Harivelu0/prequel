@@ -4,6 +4,7 @@ import threading
 import time
 import os
 import sys
+import json
 from datetime import datetime
 from dotenv import load_dotenv
 # In prequel_app/app.py
@@ -17,6 +18,8 @@ from prequel_app.github_handler import (
 )
 from prequel_db.db_handler import DatabaseHandler
 from prequel_app.slack_notifier import send_slack_notification, check_stale_prs
+from prequel_app.pulumi_executor import PulumiExecutor
+
 pulumi_executor = PulumiExecutor(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../infrastructure')))
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -41,6 +44,7 @@ deployment_status = {
     "error": None
 }
 
+
 # Background task for checking stale PRs
 def stale_pr_checker():
     """Background thread to check for stale PRs on a schedule"""
@@ -49,88 +53,6 @@ def stale_pr_checker():
         check_stale_prs(STALE_PR_DAYS)
         # Sleep for 1 day (86400 seconds)
         time.sleep(86400)
-        
-# API endpoint for saving configuration
-@app.route('/api/config', methods=['POST'])
-def save_configuration():
-    """Save GitHub and Slack configuration and provision infrastructure"""
-    try:
-        data = request.get_json()
-        github_token = data.get('githubToken')
-        organization_name = data.get('organizationName')
-        slack_webhook_url = data.get('slackWebhookUrl')
-        
-        logger.info(f"Received configuration request for organization: {organization_name}")
-        
-        # Validate inputs
-        if not github_token or not organization_name:
-            return jsonify({"error": "GitHub token and organization name are required"}), 400
-        
-        # Save to environment variables for current process
-        os.environ['GITHUB_TOKEN'] = github_token
-        os.environ['ORGANIZATION_NAME'] = organization_name
-        if slack_webhook_url:
-            os.environ['SLACK_WEBHOOK_URL'] = slack_webhook_url
-        
-        # Store configuration persistently
-        config_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config'))
-        os.makedirs(config_dir, exist_ok=True)
-        
-        # Store config securely - in production, use a proper secrets manager
-        with open(os.path.join(config_dir, 'github_config.json'), 'w') as f:
-            json.dump({
-                'token': github_token,
-                'organization': organization_name
-            }, f)
-            
-        if slack_webhook_url:
-            with open(os.path.join(config_dir, 'slack_config.json'), 'w') as f:
-                json.dump({
-                    'webhook_url': slack_webhook_url
-                }, f)
-        
-        # Initialize Pulumi executor
-        infrastructure_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../infrastructure'))
-        pulumi_executor = PulumiExecutor(infrastructure_dir)
-        
-        # Execute Pulumi to set up configuration
-        logger.info(f"Running Pulumi setup for organization: {organization_name}")
-        success = pulumi_executor.setup_config(
-            github_token=github_token,
-            organization_name=organization_name,
-            slack_webhook_url=slack_webhook_url
-        )
-        
-        if not success:
-            logger.error("Failed to set up Pulumi configuration")
-            return jsonify({"error": "Failed to set up Pulumi configuration"}), 500
-        
-        # Deploy infrastructure using Pulumi
-        logger.info("Deploying infrastructure...")
-        
-        # Since infrastructure deployment can take a while, we'll return success
-        # immediately and let the deployment happen in the background
-        
-        # Option 1: Return immediately with a status message
-        return jsonify({
-            "message": "Configuration saved. Infrastructure deployment started in background.",
-            "status": "deploying"
-        }), 200
-        
-        # Option 2: Wait for deployment to complete (may cause timeout issues)
-        # success = pulumi_executor.deploy_infrastructure()
-        # if not success:
-        #     logger.error("Failed to deploy infrastructure")
-        #     return jsonify({"error": "Failed to deploy infrastructure"}), 500
-        # 
-        # return jsonify({
-        #     "message": "Configuration saved and infrastructure deployed successfully",
-        #     "status": "complete"
-        # }), 200
-        
-    except Exception as e:
-        logger.error(f"Configuration error: {str(e)}")
-        return jsonify({"error": f"Failed to save configuration: {str(e)}"}), 500
 
 
 def deploy_infrastructure_async(infrastructure_dir):
@@ -149,7 +71,12 @@ def deploy_infrastructure_async(infrastructure_dir):
     except Exception as e:
         logger.error(f"Error in background deployment: {str(e)}")
 
-# Modified save_configuration function with background thread
+@app.route('/api/config/status', methods=['GET'])
+def get_deployment_status():
+    """Get the current infrastructure deployment status"""
+    global deployment_status
+    return jsonify(deployment_status), 200
+
 # Modified save_configuration function with background thread
 @app.route('/api/config', methods=['POST'])
 def save_configuration():
@@ -233,6 +160,7 @@ def save_configuration():
 @app.route('/api/repositories', methods=['POST'])
 def create_repository():
     """Create a new repository with branch protection"""
+    
     try:
         data = request.get_json()
         repo_name = data.get('name')

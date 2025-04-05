@@ -17,7 +17,6 @@ echo "Generated vm admin password: $VMADMIN"
 # Set Azure credentials
 echo "Setting Azure credentials..."
 
-
 # Set PR monitoring configuration
 echo "Setting PR monitoring configuration..."
 echo "enter your github token"

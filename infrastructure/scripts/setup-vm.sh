@@ -20,6 +20,17 @@ apt upgrade -y
 echo "Installing dependencies..."
 apt install -y nginx python3-pip python3-venv git ufw unixodbc-dev curl
 
+# Install Node.js
+echo "Installing Node.js..."
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt install -y nodejs
+
+# Verify Node.js installation
+echo "Node.js version:"
+node --version
+echo "npm version:"
+npm --version
+
 # Install Microsoft ODBC drivers for SQL Server
 echo "Installing Microsoft ODBC drivers..."
 curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
@@ -46,30 +57,41 @@ HOME_DIR="/home/$CURRENT_USER"
 
 # Create app directory
 echo "Setting up application directory..."
-APP_DIR="$HOME_DIR/github-slack-automation"
+APP_DIR="$HOME_DIR/prequel"
 mkdir -p $APP_DIR
 cd $APP_DIR
 
-# Create virtual environment
-echo "Setting up Python virtual environment..."
+# Create directories for backend and frontend
+mkdir -p $APP_DIR/backend
+mkdir -p $APP_DIR/frontend
+
+# Clone repository
+echo "Cloning application code..."
+CLONE_DIR="/tmp/prequel-app"
+mkdir -p $CLONE_DIR
+git clone https://github.com/Harivelu0/prequel $CLONE_DIR
+
+# Copy backend files
+echo "Setting up backend files..."
+cp -r $CLONE_DIR/backend/* $APP_DIR/backend/
+echo "Backend files copied, listing backend directory:"
+ls -la $APP_DIR/backend
+
+# Copy frontend files
+echo "Setting up frontend files..."
+cp -r $CLONE_DIR/frontend/* $APP_DIR/frontend/
+echo "Frontend files copied, listing frontend directory:"
+ls -la $APP_DIR/frontend
+
+# Set up backend
+echo "Setting up backend..."
+cd $APP_DIR/backend
 python3 -m venv venv
 source venv/bin/activate
 
-# Clone webhook handler code
-echo "Cloning webhook handler code..."
-CLONE_DIR="/tmp/prequel-webhook"
-mkdir -p $CLONE_DIR
-git clone https://github.com/Harivelu0/slack-pr-automation $CLONE_DIR
-
-# Copy application files
-echo "Setting up application files..."
-cp -r $CLONE_DIR/* $APP_DIR/
-echo "Files copied, listing app directory:"
-ls -la $APP_DIR
-
-# Install Python packages from requirements.txt
+# Install Python packages
 echo "Installing Python packages..."
-pip install -r $APP_DIR/requirements.txt || echo "Failed to install from requirements.txt, falling back to manual installation"
+pip install -r requirements.txt || echo "Failed to install from requirements.txt, falling back to manual installation"
 
 # Install gunicorn explicitly to ensure it's available
 echo "Installing gunicorn explicitly..."
@@ -78,7 +100,7 @@ pip install gunicorn
 # Fallback for package installation if requirements.txt fails
 if [ $? -ne 0 ]; then
     echo "Installing Python packages manually..."
-    pip install flask requests python-dotenv gunicorn pymysql pyodbc
+    pip install flask requests python-dotenv gunicorn pymysql pyodbc flask_cors
 fi
 
 # Parse SQL_CONNECTION_STRING to extract individual components
@@ -101,15 +123,15 @@ if [ ! -z "$SQL_CONNECTION_STRING" ]; then
 fi
 
 # Create environment file with individual SQL components
-echo "Creating .env file..."
-cat > $APP_DIR/.env << EOF
+echo "Creating .env file for backend..."
+cat > $APP_DIR/backend/.env << EOF
 # GitHub webhook configuration
 GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
 
 # Slack webhook URL
 SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
 
-# Database connection components
+# Database connection string
 SQL_SERVER=${SQL_SERVER}
 SQL_DATABASE=${SQL_DATABASE}
 SQL_USERNAME=${SQL_USERNAME}
@@ -119,23 +141,36 @@ SQL_PASSWORD=${SQL_PASSWORD}
 DATABASE_CONNECTION_STRING=${SQL_CONNECTION_STRING}
 EOF
 
-echo "Content of .env file (with values masked):"
-cat $APP_DIR/.env | sed 's/=.*$/=******/'
+# Set up frontend
+echo "Setting up frontend..."
+cd $APP_DIR/frontend
 
-# Create a systemd service file with EnvironmentFile directive
-echo "Setting up systemd service..."
-cat > /etc/systemd/system/github-slack-automation.service << EOF
+# Install Node.js dependencies
+echo "Installing frontend dependencies..."
+npm install
+
+# Install specific React dependencies
+npm install react@18 react-dom@18
+npm install axios swr react-query @headlessui/react @heroicons/react date-fns recharts
+
+# Build the frontend
+echo "Building frontend..."
+npm run build
+
+# Create a systemd service file for backend
+echo "Setting up systemd service for backend..."
+cat > /etc/systemd/system/prequel-backend.service << EOF
 [Unit]
-Description=GitHub PR Notification Service
+Description=PReQual Backend Service
 After=network.target
 
 [Service]
 User=${CURRENT_USER}
-WorkingDirectory=${APP_DIR}
-Environment="PATH=${APP_DIR}/venv/bin"
-Environment="PYTHONPATH=${APP_DIR}"
-EnvironmentFile=${APP_DIR}/.env
-ExecStart=${APP_DIR}/venv/bin/gunicorn --workers 2 --bind 0.0.0.0:5001 prequel_app.app:app
+WorkingDirectory=${APP_DIR}/backend
+Environment="PATH=${APP_DIR}/backend/venv/bin"
+Environment="PYTHONPATH=${APP_DIR}/backend"
+EnvironmentFile=${APP_DIR}/backend/.env
+ExecStart=${APP_DIR}/backend/venv/bin/gunicorn --workers 2 --bind 0.0.0.0:5001 prequel_app.app:app
 Restart=always
 
 [Install]
@@ -144,71 +179,66 @@ EOF
 
 # Configure Nginx
 echo "Configuring Nginx..."
-cat > /etc/nginx/sites-available/github-slack << EOF
+cat > /etc/nginx/sites-available/prequel << EOF
 server {
     listen 80;
     server_name _;
 
+    # Frontend - Serve Next.js static files
     location / {
-        proxy_pass http://localhost:5001;
+        root ${APP_DIR}/frontend/.next/server/pages;
+        try_files \$uri \$uri.html \$uri/index.html /index.html;
+    }
+
+    # Frontend - Next.js static assets
+    location /_next/ {
+        alias ${APP_DIR}/frontend/.next/;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+    }
+
+    # Backend API
+    location /api/ {
+        proxy_pass http://localhost:5001/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+    }
+
+    # GitHub webhook endpoint
+    location / {
+        proxy_pass http://localhost:5001/;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
 EOF
 
 # Enable the Nginx site
-ln -sf /etc/nginx/sites-available/github-slack /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/prequel /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
+
+# Test Nginx configuration
+nginx -t
 
 # Restart Nginx
 systemctl restart nginx
-
-# Set up cron jobs for scheduled tasks (adjust paths based on actual file locations)
-echo "Setting up cron jobs..."
-# Remove any existing cron jobs for these scripts
-(crontab -l 2>/dev/null || echo "") | grep -v "stale_pr_detector.py" | crontab -
-(crontab -l 2>/dev/null || echo "") | grep -v "metrics_calculator.py" | crontab -
-
-# Add new cron jobs with updated paths
-if [ -f "$APP_DIR/prequel_app/stale_pr_detector.py" ]; then
-    (crontab -l 2>/dev/null; echo "0 9 * * * cd $APP_DIR && $APP_DIR/venv/bin/python $APP_DIR/prequel_app/stale_pr_detector.py >> $APP_DIR/stale_pr.log 2>&1") | crontab -
-    echo "Added cron job for stale_pr_detector.py"
-else
-    echo "Warning: stale_pr_detector.py not found, cron job not added"
-fi
-
-if [ -f "$APP_DIR/prequel_app/metrics_calculator.py" ]; then
-    (crontab -l 2>/dev/null; echo "0 10 * * 1 cd $APP_DIR && $APP_DIR/venv/bin/python $APP_DIR/prequel_app/metrics_calculator.py >> $APP_DIR/metrics.log 2>&1") | crontab -
-    echo "Added cron job for metrics_calculator.py"
-else
-    echo "Warning: metrics_calculator.py not found, cron job not added"
-fi
-
-# Verify gunicorn installation
-echo "Verifying gunicorn installation..."
-$APP_DIR/venv/bin/pip list | grep gunicorn
-
-# List the actual directory structure 
-echo "Directory structure in $APP_DIR:"
-ls -la $APP_DIR
-ls -la $APP_DIR/prequel_app
-ls -la $APP_DIR/prequel_db
 
 # Set proper ownership for the application files
 echo "Setting permissions..."
 chown -R ${CURRENT_USER}:${CURRENT_USER} $APP_DIR
 
-# Start and enable the service
+# Start and enable the backend service
 systemctl daemon-reload
-systemctl start github-slack-automation
-systemctl enable github-slack-automation
+systemctl start prequel-backend
+systemctl enable prequel-backend
 
 # Clean up the temporary clone directory
 rm -rf $CLONE_DIR
 
 echo "Installation completed successfully at $(date)"
-echo "GitHub webhook URL: http://$(curl -s ifconfig.me)/"
-echo "Remember to configure this URL in your GitHub repository webhooks!"
+echo "Application URL: http://$(curl -s ifconfig.me)/"
+echo "Remember to configure your GitHub organization webhook to this URL!"

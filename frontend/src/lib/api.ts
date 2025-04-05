@@ -11,8 +11,33 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
   // Set a reasonable timeout to avoid long waiting times
-  timeout: 5000
+  timeout: 50000
 });
+
+
+// Add request/response interceptors for debugging
+apiClient.interceptors.request.use(request => {
+  console.log('API Request:', request.method, request.url, request.data);
+  return request;
+});
+
+apiClient.interceptors.response.use(
+  response => {
+    console.log('API Response:', response.status);
+    return response;
+  },
+  error => {
+    console.error('API Error:', error.message);
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+    } else if (error.request) {
+      console.error('No response received');
+    }
+    return Promise.reject(error);
+  }
+);
+
 
 // Define interfaces for our data models
 export interface Repository {
@@ -121,7 +146,7 @@ export interface Configuration {
   organizationName?: string;
   enableWorkflowMonitoring: boolean;
   enableSlackNotifications: boolean;
-  SLACK_WEBHOOK_URL?: string;
+  slackWebhookUrl?: string;
   stalePrDays: number;
   slackApiToken?: string;
   slackChannel?: string;
@@ -275,6 +300,7 @@ const mockData = {
   } as Configuration
 };
 
+
 // API functions for data fetching
 export const api = {
   // Health check
@@ -343,28 +369,31 @@ export const api = {
     }
   },
 
-  // Validate GitHub token
-  validateGithubToken: async (token: string): Promise<{ valid: boolean }> => {
-    try {
-      const response = await apiClient.post('/api/auth/validate-github-token', { token });
-      return response.data;
-    } catch (error) {
-      console.warn('Error validating GitHub token, using mock response');
-      // Mock successful validation
-      return { valid: true };
-    }
-  },
+// Validate GitHub token
+validateGithubToken: async (token: string): Promise<{ valid: boolean }> => {
+  // Simple validation - just check if token looks reasonable
+  if (token && token.length > 30) {
+    return { valid: true };
+  }
+  return { valid: false };
+},
 
-  // Get configuration
-  getConfiguration: async (): Promise<Configuration> => {
-    try {
-      const response = await apiClient.get('/api/auth/configuration');
-      return response.data;
-    } catch (error) {
-      console.warn('Error fetching configuration, using mock data');
-      return mockData.configuration;
+// Get configuration
+getConfiguration: async (): Promise<Configuration> => {
+  try {
+    // Try local storage first
+    const storedConfig = localStorage.getItem('prequel-config');
+    if (storedConfig) {
+      return JSON.parse(storedConfig);
     }
-  },
+    
+    // Fall back to mock data
+    return mockData.configuration;
+  } catch (error) {
+    console.warn('Error fetching configuration, using mock data');
+    return mockData.configuration;
+  }
+},
 
   // Save configuration (initial setup)
   saveConfiguration: async (config: Partial<Configuration>): Promise<{ success: boolean }> => {
@@ -372,7 +401,7 @@ export const api = {
       const response = await apiClient.post('/api/config', {
         githubToken: config.githubToken,
         organizationName: config.organizationName, // Note: using organizationName instead of organizationToken
-        slackWebhookUrl: config.SLACK_WEBHOOK_URL
+        slackWebhookUrl: config.slackWebhookUrl 
       });
       return { success: true };
     } catch (error) {
@@ -398,7 +427,7 @@ export const api = {
       console.error('Error creating repository:', error);
       return { success: false };
     }
-  }
+  },
   
   getDashboardStats: async () => {
     try {

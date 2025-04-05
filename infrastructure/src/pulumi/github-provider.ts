@@ -1,7 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as github from "@pulumi/github";
 import * as logger from "../utils/logger";
-import { getErrorMessage } from "../utils/error-helpers";
 
 /**
  * Provides GitHub API integration for repository operations
@@ -57,13 +56,10 @@ export class GitHubProvider {
         logger.info(`Found ${repoArray.length} repositories for ${organizationName}`);
         return repoArray;
       } catch (e) {
-        logger.error(`Error fetching repositories with query: ${getErrorMessage(e)}`);
-        
         // Return empty array as fallback
         return [];
       }
     } catch (error: unknown) {
-      logger.error(`Error fetching repositories: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -100,7 +96,6 @@ export class GitHubProvider {
         }
       );
     } catch (error: unknown) {
-      logger.error(`Error creating repository: ${getErrorMessage(error)}`);
       throw error;
     }
   }

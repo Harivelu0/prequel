@@ -75,9 +75,8 @@ export default function SetupPage() {
       await api.saveConfiguration({
         githubToken,
         organizationName: organizationToken, // Change to organizationName
-        enableWorkflowMonitoring: false,
         enableSlackNotifications,
-        SLACK_WEBHOOK_URL: enableSlackNotifications ? slackWebhookUrl : '',
+        slackWebhookUrl: enableSlackNotifications ? slackWebhookUrl : '',
         stalePrDays: enableSlackNotifications ? stalePrDays : 7
       });
   

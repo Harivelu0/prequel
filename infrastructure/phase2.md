@@ -74,3 +74,5 @@ Diagnostics:
     after the deployment it will takes some time with actual hosting cause we have some initla setup
 
 MkTqpCxX1QTK+kZTmpjVKw==
+
+npm install @pulumi/azure-native
