@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeftIcon,
@@ -122,90 +122,3 @@ export const SetupSuccess = () => {
   );
 };
 
-// Example Setup Page Component (you would replace this with your actual setup logic)
-export const SetupPage = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [error] = useState<string | null>(null);
-
-  // Example steps - replace with your actual setup steps
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div>
-            <StepHeader 
-              currentStep={currentStep}
-              setCurrentStep={setCurrentStep}
-              title="Step 1: Basic Information"
-              subtitle="Enter your basic details"
-            />
-            {/* Your step 1 content */}
-            <button 
-              onClick={() => setCurrentStep(2)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded"
-            >
-              Next Step
-            </button>
-            {error && <ErrorMessage error={error} />}
-          </div>
-        );
-      case 2:
-        return (
-          <div>
-            <StepHeader 
-              currentStep={currentStep}
-              setCurrentStep={setCurrentStep}
-              title="Step 2: Additional Details"
-              subtitle="Provide more information"
-            />
-            {/* Your step 2 content */}
-            <button 
-              onClick={() => setCurrentStep(3)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded"
-            >
-              Next Step
-            </button>
-            {error && <ErrorMessage error={error} />}
-          </div>
-        );
-      case 3:
-        return (
-          <div>
-            <StepHeader 
-              currentStep={currentStep}
-              setCurrentStep={setCurrentStep}
-              title="Step 3: Finalize Setup"
-              subtitle="Review and complete your setup"
-            />
-            {/* Your step 3 content */}
-            <button 
-              onClick={() => {
-                // Simulate setup completion
-                // If successful, show SetupSuccess
-                // If error, set error state
-                setCurrentStep(4);
-              }}
-              className="bg-indigo-600 text-white px-4 py-2 rounded"
-            >
-              Complete Setup
-            </button>
-            {error && <ErrorMessage error={error} />}
-          </div>
-        );
-      case 4:
-        return <SetupSuccess />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="max-w-md mx-auto">
-        {renderStep()}
-      </div>
-    </div>
-  );
-};
-
-export default SetupPage;

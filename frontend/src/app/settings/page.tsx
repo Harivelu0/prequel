@@ -286,7 +286,7 @@ const Modal = ({ isOpen, onClose, children }: {
   return (
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75"
-      onClick={onClose} // Add this to close when clicking the backdrop
+      onClick={onClose} 
     >
       <div 
         className="bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
@@ -295,7 +295,8 @@ const Modal = ({ isOpen, onClose, children }: {
         {children}
       </div>
     </div>
-  );
+  
+);
 };
 
 export default function SettingsPage() {

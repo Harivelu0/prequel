@@ -40,15 +40,6 @@ export default function ContributorsPage() {
         try {
           console.log('Fetching contributors data...');
           
-          // Make a direct fetch call to diagnose the issue
-          // const directResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`);
-          // console.log('Direct fetch response status:', directResponse.status);
-          
-          // if (directResponse.ok) {
-          //   const directData = await directResponse.json();
-          //   console.log('Direct fetch data:', directData);
-          // }
-          
           // Now try with the API client
           const data = await api.getContributors();
           console.log('API client response:', data);
@@ -56,7 +47,7 @@ export default function ContributorsPage() {
           if (data && Array.isArray(data) && data.length > 0) {
             // Process data - checking property names
             const processedData = data.map(item => {
-              console.log('Processing contributor item:', item); // Add detailed logging
+              console.log('Processing contributor item:', item); 
               
               // Create a typed contributor with robust fallbacks
               const typedContributor: Contributor = {
@@ -75,7 +66,7 @@ export default function ContributorsPage() {
                 repositories: Array.isArray(item.repositories) ? item.repositories : []
               };
               
-              console.log('Processed contributor:', typedContributor); // Log the processed item
+              console.log('Processed contributor:', typedContributor); 
               return typedContributor;
             });
             
@@ -125,7 +116,7 @@ export default function ContributorsPage() {
     name: contributor.username,
     'Pull Requests': contributor.pr_count,
     'Reviews': contributor.review_count,
-    'Comments': contributor.comment_count // Use the standardized property name
+    'Comments': contributor.comment_count 
   }));
 
   return (
@@ -157,7 +148,7 @@ export default function ContributorsPage() {
               <Legend formatter={(value) => <span style={{ color: '#e5e7eb' }}>{value}</span>} />
               <Bar dataKey="Pull Requests" fill="#8b5cf6" />
               <Bar dataKey="Reviews" fill="#10b981" />
-              <Bar dataKey="Comments" fill="#f59e0b" /> {/* Changed from Commands to Comments */}
+              <Bar dataKey="Comments" fill="#f59e0b" /> 
             </BarChart>
           </ResponsiveContainer>
         </div>

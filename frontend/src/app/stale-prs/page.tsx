@@ -1,4 +1,3 @@
-// src/app/stale-prs/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -29,8 +28,6 @@ interface PullRequest {
 // Mock API client for demonstration
 const api = {
   getStalePRs: async (): Promise<PullRequest[]> => {
-    // In a real app, this would call your backend API
-    // For demonstration, return mock data
     return Promise.resolve([]);
   }
 };

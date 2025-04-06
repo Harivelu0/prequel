@@ -14,19 +14,42 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   
-  useEffect(() => {
-    // Check if the user has completed onboarding
+  // In your page.tsx (dashboard) file, update your useEffect:
+useEffect(() => {
+  // Function to check status and load data
+  const checkStatusAndLoad = () => {
+    const demoModeActive = localStorage.getItem('demoMode') === 'true';
     const hasCompletedOnboarding = localStorage.getItem('onboardingCompleted') === 'true';
-    setOnboardingCompleted(hasCompletedOnboarding);
     
-    // If onboarding is complete, fetch dashboard data
-    if (hasCompletedOnboarding) {
+    // Set state based on localStorage
+    setIsDemoMode(demoModeActive);
+    setOnboardingCompleted(demoModeActive || hasCompletedOnboarding);
+    
+    // If either condition is true, load dashboard data
+    if (demoModeActive || hasCompletedOnboarding) {
       fetchDashboardData();
     } else {
       setLoading(false);
     }
-  }, []);
+  };
+  
+  // Run the check
+  checkStatusAndLoad();
+  
+  // Add event listener for storage changes
+  const handleStorageChange = () => {
+    checkStatusAndLoad();
+  };
+  
+  window.addEventListener('storage', handleStorageChange);
+  
+  // Clean up
+  return () => {
+    window.removeEventListener('storage', handleStorageChange);
+  };
+}, []);
   
   const fetchDashboardData = async () => {
     try {
@@ -41,12 +64,26 @@ export default function Home() {
     }
   };
 
+  const exitDemoMode = () => {
+    // Remove demo mode flag
+    localStorage.removeItem('demoMode');
+    
+    // Remove API URL setting
+    localStorage.removeItem('apiUrl');
+    
+    // Remove onboarding completed flag to show welcome page
+    localStorage.removeItem('onboardingCompleted');
+    
+    // Force page refresh to go back to welcome page
+    window.location.href = '/';
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
   
-  // If onboarding is not completed, show welcome page
-  if (!onboardingCompleted) {
+  // If onboarding is not completed and not in demo mode, show welcome page
+  if (!onboardingCompleted && !isDemoMode) {
     return <WelcomePage />;
   }
   
@@ -56,18 +93,29 @@ export default function Home() {
         <div className="text-center">
           <h2 className="text-xl font-semibold text-red-400">Error</h2>
           <p className="mt-2 text-gray-300">{error}</p>
-          <button
-            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-            onClick={() => window.location.reload()}
-          >
-            Retry
-          </button>
+          <div className="mt-4">
+            <button
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </button>
+            
+            {isDemoMode && (
+              <button
+                onClick={exitDemoMode}
+                className="ml-3 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Exit Demo
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
-  // Use metrics if available, otherwise use mock data
+  // Use metrics if available
   const dashboardMetrics: PRMetrics = metrics || {
     pr_authors: [],
     active_reviewers: [],
@@ -75,11 +123,26 @@ export default function Home() {
     stale_pr_count: 0
   };
 
+  // Rest of your dashboard code
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-100">Dashboard</h1>
-        <p className="text-gray-400">GitHub repository and workflow analytics</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-100">Dashboard</h1>
+          <p className="text-gray-400">GitHub repository and workflow analytics</p>
+        </div>
+        
+        {isDemoMode && (
+          <div className="flex items-center">
+            <span className="px-2 py-1 bg-red-800 text-white rounded-md text-xs mr-3">DEMO MODE</span>
+            <button
+              onClick={exitDemoMode}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Exit Demo
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Stats Overview */}
@@ -88,13 +151,11 @@ export default function Home() {
           title="Total Pull Requests"
           value={dashboardMetrics.pr_authors.reduce((acc, item) => acc + item[1], 0)}
           icon="pull-request"
-
         />
         <DashboardCard
           title="Active Reviewers"
           value={dashboardMetrics.active_reviewers.length}
           icon="user"
-
         />
         <DashboardCard
           title="Stale PRs"

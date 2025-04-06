@@ -1,4 +1,3 @@
-// src/lib/api.ts
 import axios from 'axios';
 
 // Define base URL for API
@@ -116,28 +115,10 @@ export interface PRMetrics {
     stale_pr_count: number;
 }
 
-// Interfaces for workflow monitoring and configuration
-export interface WorkflowMetrics {
-  total_workflows: number;
-  successful_workflows: number;
-  failed_workflows: number;
-  workflow_run_durations: [string, number][]; // [workflow_name, avg_duration_in_minutes]
-}
-
-export interface WorkflowRun {
-  id: number;
-  workflow_name: string;
-  repository: string;
-  status: 'success' | 'failure' | 'cancelled' | 'in_progress';
-  duration_seconds: number;
-  triggered_by: string;
-  created_at: string;
-}
 
 export interface Configuration {
   githubToken?: string;
   organizationName?: string;
-  enableWorkflowMonitoring: boolean;
   enableSlackNotifications: boolean;
   slackWebhookUrl?: string;
   stalePrDays: number;
@@ -203,14 +184,13 @@ export const api = {
     }
   },
 
- // In your api.ts file, enhance the getContributors method with more debugging:
 
 getContributors: async (): Promise<Contributor[]> => {
   try {
     console.log('Fetching contributors data...');
     
     // Make a direct fetch call with detailed logging
-    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://4.213.171.225'}/api/contributors`;
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/api/contributors`;
     console.log('Fetching from URL:', url);
     
     const directResponse = await fetch(url);
@@ -233,8 +213,6 @@ getContributors: async (): Promise<Contributor[]> => {
         });
       }
     }
-    
-    // Now try with the API client as before
     const response = await apiClient.get('/api/contributors');
     console.log('API client full response:', response);
     return response.data;
@@ -273,14 +251,12 @@ getContributors: async (): Promise<Contributor[]> => {
       }
       
       return {
-        enableWorkflowMonitoring: false,
         enableSlackNotifications: false,
         stalePrDays: 7
       };
     } catch  {
       console.warn('Error fetching configuration');
       return {
-        enableWorkflowMonitoring: false,
         enableSlackNotifications: false,
         stalePrDays: 7
       };
@@ -352,33 +328,6 @@ getContributors: async (): Promise<Contributor[]> => {
     } catch {
       console.warn('Error updating configuration');
       return { success: false };
-    }
-  },
-
-  // Get workflow metrics
-  getWorkflowMetrics: async (): Promise<WorkflowMetrics> => {
-    try {
-      const response = await apiClient.get('/api/metrics/workflows');
-      return response.data;
-    } catch  {
-      console.warn('Error fetching workflow metrics');
-      return {
-        total_workflows: 0,
-        successful_workflows: 0,
-        failed_workflows: 0,
-        workflow_run_durations: []
-      };
-    }
-  },
-
-  // Get recent workflow runs
-  getWorkflowRuns: async (): Promise<WorkflowRun[]> => {
-    try {
-      const response = await apiClient.get('/api/workflow-runs');
-      return response.data;
-    } catch  {
-      console.warn('Error fetching workflow runs');
-      return [];
     }
   },
 

@@ -1,13 +1,10 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { 
   ArrowRightIcon 
 } from '@heroicons/react/24/solid';
 
-
-// Custom icons (preserved from original code)
 const PullRequestIcon = () => (
   <svg className="h-6 w-6 text-indigo-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M18 15C16.3431 15 15 16.3431 15 18C15 19.6569 16.3431 21 18 21C19.6569 21 21 19.6569 21 18C21 16.3431 19.6569 15 18 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -39,28 +36,26 @@ const BellIcon = () => (
 );
 
 export default function WelcomePage() {
-  // We start at intro screen
-  // const [currentStep, setCurrentStep] = useState(0);
-  const router = useRouter();
   
   // Function to enter demo mode
-  const enterDemoMode = () => {
-    // Set demo mode flag
-    localStorage.setItem('demoMode', 'true');
-    
-    // Set a pre-configured demo API URL - replace with your actual demo backend URL
-    localStorage.setItem('apiUrl', 'http://your-demo-backend-ip/api');
-    
-    // Mark onboarding as completed
-    localStorage.setItem('onboardingCompleted', 'true');
-    
-    // Dispatch setup completed event to trigger sidebar display
-    const setupCompletedEvent = new Event('setup-completed');
-    window.dispatchEvent(setupCompletedEvent);
-    
-    // Navigate to dashboard
-    router.push('/');
-  };
+  // In WelcomePage.js, modify the enterDemoMode function:
+const enterDemoMode = () => {
+  // Set demo mode flag
+  localStorage.setItem('demoMode', 'true');
+  
+  // Set a pre-configured demo API URL - replace with your actual demo backend URL
+  localStorage.setItem('apiUrl', 'http://your-demo-backend-ip/api');
+  
+  // Mark onboarding as completed
+  localStorage.setItem('onboardingCompleted', 'true');
+  
+  // Dispatch setup completed event to trigger sidebar display
+  const setupCompletedEvent = new Event('setup-completed');
+  window.dispatchEvent(setupCompletedEvent);
+  
+  // Use direct page navigation instead of router to force a complete page refresh
+  window.location.href = '/';
+};
   
   return (
     <div className="flex flex-col h-screen bg-gray-900">

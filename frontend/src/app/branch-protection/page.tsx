@@ -37,10 +37,7 @@ const handleCreateRepo = async (e: React.FormEvent) => {
     });
     
     if (result.success) {
-      // Mark as success even if there was a warning
       setCreateSuccess(true);
-      
-      // Check if there was a partial success (repo created but branch protection failed)
       if (!result.success) {
         setCreateError('Repository created, but there was an issue with branch protection.');
       }
