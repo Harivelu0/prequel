@@ -11,12 +11,8 @@ import { deployRepositoryConfig, deployMultipleRepositories } from '../automatio
 
 // Export as a single deployer object
 export const deployer = {
-  // Deployer functions
+
   deployRepositoryConfig,
   deployMultipleRepositories,
   
-//   // Repository functions
-//   createRepository,
-//   createBranchProtection,
-//   createWebhook,
 };

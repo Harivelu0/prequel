@@ -4,7 +4,6 @@ from datetime import datetime
 import os
 import sys
 
-# Add the project root directory to Python's path
 sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 
 from prequel_db.db_handler import DatabaseHandler

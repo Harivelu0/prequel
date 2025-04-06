@@ -5,7 +5,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { NetworkInfrastructureResult } from "./network";
 
-// Configuration
 const config = new pulumi.Config();
 
 export interface VMResult {

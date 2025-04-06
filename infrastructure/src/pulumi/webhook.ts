@@ -31,7 +31,7 @@ export function createWebhook(
       repository: repository.name,
       
       configuration: {
-        url: webhookUrl || "", // Use the URL from config or empty string
+        url: webhookUrl || "", 
         contentType: 'json',
         insecureSsl: false,
         secret: config.webhookSecret,

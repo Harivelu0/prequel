@@ -4,8 +4,6 @@ import logging
 from datetime import datetime
 import os
 import sys
-
-# Add the project root directory to Python's path
 sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 
 from prequel_db.db_handler import DatabaseHandler
@@ -210,8 +208,6 @@ def process_review_comment(data):
         # Check if this comment is associated with a review
         review_id = None
         if comment_data.get('pull_request_review_id'):
-            # In a real implementation, you might want to look up the review_id in your DB
-            # For simplicity, we'll pass None for now
             pass
         
         comment_id = db.add_review_comment(comment_data, pr_id, commenter_id, review_id)

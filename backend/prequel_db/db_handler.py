@@ -103,8 +103,6 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
             logger.error(f"Error in get_recent_prs: {str(e)}")
             return []
          
-        
-    # In prequel_db/db_handler.py or a new file like prequel_db/db_api.py
 
     def get_repositories_with_pr_counts(self):
         """Get repositories with PR counts for frontend"""
@@ -276,7 +274,7 @@ class DatabaseHandler(DatabaseModels, DatabaseAnalytics):
             return {
                 'pr_authors': pr_authors,
                 'active_reviewers': active_reviewers,
-                'comment_users': comment_users,  # Changed from command_users to comment_users
+                'comment_users': comment_users,  
                 'stale_pr_count': stale_pr_count
             }
         except Exception as e:

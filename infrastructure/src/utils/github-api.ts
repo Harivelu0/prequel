@@ -132,8 +132,6 @@ export async function verifyRepositoryWebhooks(
   });
 }
 
-// src/utils/github-api.ts
-// Add this function to your existing file
 
 interface RepoCreateOptions {
   name: string;

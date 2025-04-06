@@ -2,11 +2,11 @@ import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure-native";
 import * as sql from "@pulumi/azure-native/sql";
 
-// Configuration
+
 const config = new pulumi.Config();
 
 /**
- * Creates a SQL Server and Database for the PR Management System
+ SQL Server and Database for the PR Management System
  */
 export function createDatabase(
   resourceGroup: azure.resources.ResourceGroup,

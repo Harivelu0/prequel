@@ -4,7 +4,7 @@ import * as github from "@pulumi/github";
 import * as fs from "fs";
 import * as path from "path";
 
-// Import our infrastructure modules
+// Import infrastructure modules
 import { createVirtualMachine } from "./src/azure/vm";
 import { createDatabase, addSqlFirewallRule } from "./src/azure/database";
 import { createNetworkInfrastructure } from "./src/azure/network";
@@ -101,9 +101,7 @@ try {
       active: true,
     }, { 
       provider: githubProvider,
-      // Add this to maintain the same resource across updates:
       deleteBeforeReplace: true,
-      // This tells Pulumi which properties should not trigger recreation
       ignoreChanges: ["configuration.secret"]
     });
     console.log("GitHub organization webhook created successfully");
@@ -117,7 +115,6 @@ try {
     console.log(`Setting up repository: ${repoName}`);
     
     try {
-      // Create a webhook for the repository
       const webhook = new github.RepositoryWebhook(`webhook-${repoName}`, {
         repository: repoName,
         configuration: {
@@ -166,7 +163,6 @@ try {
   const sqlConnectionString = pulumi.interpolate`Server=tcp:${db.sqlServer.name}.database.windows.net,1433;Initial Catalog=${db.database.name};Persist Security Info=False;User ID=${config.require("sqlAdminUsername")};Password=${config.requireSecret("sqlAdminPassword")};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`;
   console.log("Exports configured successfully");
 
-  // Now export them
   exports.resourceGroupName = resourceGroupName;
   exports.vmName = vmName;
   exports.vmIpAddress = vmIpAddress;

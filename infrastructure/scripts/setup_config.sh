@@ -1,5 +1,4 @@
 #!/bin/bash
-# Set up Pulumi configuration for PReQual Phase 2
 
 GITHUB_TOKEN=$1 
 SLACK_WEBHOOK_URL=$2 
@@ -19,7 +18,10 @@ VMADMIN=$(openssl rand -base64 16)
 echo "Generated vm admin password: $VMADMIN"
 
 # Set Azure credentials
-
+pulumi config set azure-native:clientId "$CLIENTID"
+pulumi config set azure-native:clientSecret "$CLIENTSECRET" --secret
+pulumi config set azure-native:tenantId "$TENANDID"
+pulumi config set azure-native:subscriptionId "$SUBSCRIPTIONID"
 
 # Set PR monitoring configuration
 echo "Setting PR monitoring configuration..."

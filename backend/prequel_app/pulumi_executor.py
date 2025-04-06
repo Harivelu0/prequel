@@ -1,5 +1,3 @@
-# prequel_app/pulumi_executor.py
-
 import subprocess
 import logging
 import os
@@ -119,8 +117,8 @@ class PulumiExecutor:
             True if successful, False otherwise
         """
         try:
-            # First, check if we have a stack selected and create/select one if needed
-            stack_name = "dev-prequel"  # Your default stack name
+            # First, check if it have a stack selected and create/select one if needed
+            stack_name = "dev-prequel"  #  default stack name
             
             # Check for existing stacks
             logger.info(f"Checking for Pulumi stack: {stack_name}")

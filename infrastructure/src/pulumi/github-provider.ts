@@ -18,8 +18,7 @@ export class GitHubProvider {
     // Create the GitHub provider
     this.provider = new github.Provider("github-provider", {
       token: token,
-      // Optional: set the base URL for GitHub Enterprise
-      // baseUrl: "https://github.example.com/api/v3/",
+      
     });
     
     logger.info("GitHub provider initialized");
@@ -46,9 +45,6 @@ export class GitHubProvider {
           query: query
         }, { provider: this.provider });
         
-        // Access the repositories array
-        // Since GetRepositoriesResult might not have items property in your version
-        // We'll handle this safely with type assertions
         const repoArray = (repositories as any).repositories || 
                          (repositories as any).items || 
                          [];

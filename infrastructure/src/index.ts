@@ -63,7 +63,6 @@ program
     }
   });
 
-// Command to create repository directly (without Pulumi)
 program
   .command('create-repo-only')
   .description('Create a repository directly using GitHub API (no Pulumi)')
@@ -115,7 +114,7 @@ program
         html_url: repo.html_url
       }, null, 2));
       
-    } catch (error: any) {  // Type error as 'any'
+    } catch (error: any) {  
       if (error && error.message && (
         typeof error.message === 'string' &&
         (error.message.includes('branch protection') ||
@@ -176,5 +175,4 @@ program
     }
   });
 
-// Parse command line arguments
 program.parse(process.argv);

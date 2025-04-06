@@ -17,12 +17,10 @@ export function createBranchProtection(
   const provider = config.organization 
     ? new github.Provider(`${config.name}-bp-provider`, {
         owner: config.organization,
-        // Add token debugging (redacted for security)
+        
     })
     : undefined;
 
-  // Get the repository node ID
-  // The full repository name is needed for branch protection (org/repo format)
   const repoFullName = config.organization 
     ? `${config.organization}/${config.name}`
     : config.name;
