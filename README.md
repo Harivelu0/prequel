@@ -21,7 +21,7 @@ PReQual addresses the common challenges teams face with PR workflows:
 
 By leveraging Pulumi to programmatically manage GitHub repositories and analyze PR workflows, PReQual provides real-time dashboards, automated notifications, standardized repository configurations, and meaningful contribution metrics—all deployed through infrastructure as code.
 
-See the [live demo](https://prequel-3jjh15c8m-hps-projects-4515921f.vercel.app/) (Note: Due to cloud costs, this demo operates without Azure resources, but fully demonstrates the UI and workflow). The screenshots below showcase actual GitHub data collected from test repositories in my organization.
+See the [live demo](https://prequel.vercel.app/) (Note: Due to cloud costs, this demo operates without Azure resources, but fully demonstrates the UI and workflow). The screenshots below showcase actual GitHub data collected from test repositories in my organization.
 
 ![Screenshot 2025-04-06 015757](https://github.com/user-attachments/assets/88cfd304-ab19-444b-93aa-b02dbaaefecb)
 
