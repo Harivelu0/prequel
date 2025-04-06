@@ -28,7 +28,6 @@ const handleCreateRepo = async (e: React.FormEvent) => {
   setCreateSuccess(false);
 
   try {
-    // Include branch protection settings in repository creation
     const result = await api.createRepository({
       name: repoName,
       description: repoDescription,

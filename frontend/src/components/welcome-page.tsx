@@ -37,23 +37,17 @@ const BellIcon = () => (
 
 export default function WelcomePage() {
   
-  // Function to enter demo mode
-  // In WelcomePage.js, modify the enterDemoMode function:
 const enterDemoMode = () => {
-  // Set demo mode flag
+  
   localStorage.setItem('demoMode', 'true');
   
-  // Set a pre-configured demo API URL - replace with your actual demo backend URL
   localStorage.setItem('apiUrl', 'http://your-demo-backend-ip/api');
   
-  // Mark onboarding as completed
   localStorage.setItem('onboardingCompleted', 'true');
   
-  // Dispatch setup completed event to trigger sidebar display
   const setupCompletedEvent = new Event('setup-completed');
   window.dispatchEvent(setupCompletedEvent);
   
-  // Use direct page navigation instead of router to force a complete page refresh
   window.location.href = '/';
 };
   

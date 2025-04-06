@@ -11,7 +11,6 @@ import {
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 
-// Update your existing sidebar navItems array:
 const navItems = [
   { name: 'Dashboard', href: '/', icon: ChartBarIcon },
   { name: 'Stale PRs', href: '/stale-prs', icon: ClockIcon },

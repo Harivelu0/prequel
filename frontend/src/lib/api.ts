@@ -30,7 +30,7 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Define interfaces for our data models
+// Define interfaces for  data models
 export interface Repository {
   id: number;
   github_id: number;

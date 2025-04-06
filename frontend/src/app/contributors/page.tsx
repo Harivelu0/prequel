@@ -58,7 +58,6 @@ export default function ContributorsPage() {
                 pr_count: item.pr_count || 0,
                 review_count: item.review_count || 0,
                 
-                // Handle all possible comment/command property names with robust fallbacks
                 comment_count: 
                   item.comment_count !== undefined ? item.comment_count : 
                   item.command_count !== undefined ? item.command_count : 0,

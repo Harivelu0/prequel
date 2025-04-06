@@ -14,7 +14,7 @@ export default function ClientLayout({
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Ensure this only runs on the client
+    
     setIsClient(true);
 
     // Check if user has completed onboarding

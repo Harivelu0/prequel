@@ -16,18 +16,15 @@ export default function Home() {
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
   
-  // In your page.tsx (dashboard) file, update your useEffect:
 useEffect(() => {
   // Function to check status and load data
   const checkStatusAndLoad = () => {
     const demoModeActive = localStorage.getItem('demoMode') === 'true';
     const hasCompletedOnboarding = localStorage.getItem('onboardingCompleted') === 'true';
     
-    // Set state based on localStorage
     setIsDemoMode(demoModeActive);
     setOnboardingCompleted(demoModeActive || hasCompletedOnboarding);
     
-    // If either condition is true, load dashboard data
     if (demoModeActive || hasCompletedOnboarding) {
       fetchDashboardData();
     } else {
@@ -35,17 +32,17 @@ useEffect(() => {
     }
   };
   
-  // Run the check
+
   checkStatusAndLoad();
   
-  // Add event listener for storage changes
+
   const handleStorageChange = () => {
     checkStatusAndLoad();
   };
   
   window.addEventListener('storage', handleStorageChange);
   
-  // Clean up
+  
   return () => {
     window.removeEventListener('storage', handleStorageChange);
   };
@@ -65,16 +62,13 @@ useEffect(() => {
   };
 
   const exitDemoMode = () => {
-    // Remove demo mode flag
+
     localStorage.removeItem('demoMode');
     
-    // Remove API URL setting
     localStorage.removeItem('apiUrl');
     
-    // Remove onboarding completed flag to show welcome page
     localStorage.removeItem('onboardingCompleted');
     
-    // Force page refresh to go back to welcome page
     window.location.href = '/';
   };
 
@@ -123,7 +117,6 @@ useEffect(() => {
     stale_pr_count: 0
   };
 
-  // Rest of your dashboard code
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">

@@ -11,7 +11,6 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
 
-// Imported from your existing components
 const GithubTokenInstructions = ({ onClose }: { onClose: () => void }) => {
   const steps = [
     {

@@ -11,7 +11,7 @@ export default function CommentsBarChart({ data }: CommentsBarChartProps) {
   // Transform data for Recharts
   const chartData = data.map(([name, count]) => ({
     name,
-    comments: count  // Changed from commands
+    comments: count  
   }));
 
   return (
@@ -31,7 +31,7 @@ export default function CommentsBarChart({ data }: CommentsBarChartProps) {
               color: '#e5e7eb'
             }}
           />
-          <Bar dataKey="comments" fill="#f59e0b" /> {/* Changed from commands */}
+          <Bar dataKey="comments" fill="#f59e0b" /> 
         </BarChart>
       </ResponsiveContainer>
     </div>
