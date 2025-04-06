@@ -1,15 +1,15 @@
 config:
   prequel:githubToken:
-    secure: AAABAPmwZ/s5N2QQ/eE06kSk98oSB9rEI5hUGhjZHZF5x7oecRbd/m2O2zrcNI0UhRwrA15HhGzfsMCpc108Wk6ePMj5jzTgQ0z1qr+OJORmfT51bk8GOWsz8Kbo05CX1B3aaCVk2dTSj4kWtIO6hm5UFhQg5kC/oYM6pOI=
+    secure: AAABACbqY8s+RodTlFb/r7BJaK0uGmF43ZBAoeJLHa4ONmUtknBnWzyZLfC2X0BfsV83djD33BI4wtXRVsyzCALK+aCnmS9dwwZwjVUrEL82zeYBsVjdxLdk0KSQ9VpPTpRROMcSNmaphu+eoe0ElJWk09v7gr9atqh+Yw0=
   prequel:githubWebhookSecret:
-    secure: AAABAKzqC4mRzAbVy9BqJQjUisYAVoefcb0kWL4+UMOC9UbTPHVUK8G9O6iLLrw3eU2EVHKgTrhjKuVUBt3fUHALgrNua9Qn
+    secure: AAABAP16uSikOVgnJHgRczN/Q2Hv1pV6CnZSZxTv1LfCase+L4fgJnH4HzG8jcYKjVXvzjyDdWim+ojPHCJdgo8e3cNZVuTb
   prequel:slackWebhookUrl:
-    secure: AAABAG5rgX5s3ORrL4iEJ4bSXiO83ZVyFqmFNvhMSWDi/IA6f3pEcEyubDvub1B6mPeLUZA9MjwBpkE6MJcX3i7z8aVk0HjdueEv7rkiTd4KFYoCdvMpI0hOkvR4LLJGBcVtiDHxWrtD0p58Zywz6LI=
+    secure: AAABAGXEzpcHKGR+88zUssqRDZeZ0YB0dSmStz7kvoCqZN5EJ99wfxgmxxrvpW0IPPKzAEngjDqSATwl1kBciLwxcfC2ME2Ggsg4WIE4VqZM/JjwiQQxt//8IXQ0vwYQuPltNbFkW+18kjRftMpN5uU=
   prequel:vmAdminUsername: vmadmin
   prequel:vmAdminPassword:
-    secure: AAABAIsX9BPXED8FUcqf4vWE8OZU1CeCfohDxQvTcErAS+eHXzbqktsqsiEYTijO8ADoB5GZ8Ds=
+    secure: AAABADdiNktL2D9r3oBJCTDsemROF0+mnV3OTY0ruwVECLYgKBZItPqnOJRaYEbb0gNCZqM69Pg=
   prequel:sqlAdminUsername: prequel_admin
   prequel:sqlAdminPassword:
-    secure: AAABALNYJi8aARyQzIVp8C8q0oIDRojvgg0QSxrO+JbV4yW3ghdFphMffKhAi0cxI6hZyUseqtc=
+    secure: AAABAMFwJa+2Hcd6YbBo2CbkpMkPIlnGZz0Re8JVnb7Bv/IXBa7Wfk4OP9HLLuZrCCEaDQhHtyo=
   prequel:location: Central India
   prequel:organizationName: Shetchuko

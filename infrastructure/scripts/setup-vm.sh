@@ -50,22 +50,35 @@ APP_DIR="$HOME_DIR/prequel"
 mkdir -p $APP_DIR
 cd $APP_DIR
 
-# Clone repository
+# Clone repository to a temporary directory first
 echo "Cloning application code..."
 CLONE_DIR="/tmp/prequel-app"
 mkdir -p $CLONE_DIR
 git clone https://github.com/Harivelu0/prequel $CLONE_DIR
 
-# Create backend directory
+echo "Repository cloned successfully, copying needed directories..."
+
+# Copy only backend and infrastructure directories
 mkdir -p $APP_DIR/backend
+mkdir -p $APP_DIR/infrastructure
 
-# Copy only backend files
-echo "Setting up backend files..."
+# Copy backend files
 cp -r $CLONE_DIR/backend/* $APP_DIR/backend/
-echo "Backend files copied, listing backend directory:"
-ls -la $APP_DIR/backend
 
-# Set up backend
+# Copy infrastructure files
+cp -r $CLONE_DIR/infrastructure/* $APP_DIR/infrastructure/
+
+echo "Directories copied successfully, listing app directory:"
+ls -la $APP_DIR
+
+echo "Setting up sudo permissions for service restart..."
+cat > /etc/sudoers.d/prequel << EOF
+# Allow the application user to restart the service without a password
+${CURRENT_USER} ALL=(ALL) NOPASSWD: /bin/systemctl restart prequel-backend
+EOF
+chmod 440 /etc/sudoers.d/prequel
+
+# Now setup backend
 echo "Setting up backend..."
 cd $APP_DIR/backend
 python3 -m venv venv
@@ -204,8 +217,24 @@ systemctl daemon-reload
 systemctl start prequel-backend
 systemctl enable prequel-backend
 
-# Clean up the temporary clone directory
+# Setup infrastructure requirements
+echo "Setting up infrastructure dependencies..."
+# Install Node.js if not already installed
+if ! command -v node &> /dev/null; then
+    echo "Installing Node.js..."
+    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    apt install -y nodejs
+fi
+
+# Install npm packages for infrastructure
+cd $APP_DIR/infrastructure
+npm install
+
+echo "Infrastructure dependencies installed successfully"
+
+# Clean up temporary clone directory
 rm -rf $CLONE_DIR
+echo "Temporary clone directory removed"
 
 echo "Installation completed successfully at $(date)"
 echo "Backend API available at: http://$(curl -s ifconfig.me)/api/"

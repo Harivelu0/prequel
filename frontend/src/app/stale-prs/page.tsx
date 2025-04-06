@@ -78,64 +78,6 @@ export default function StalePRsPage() {
     );
   }
 
-  // Mock data for demo purposes
-  const mockStalePRs: PullRequest[] = stalePRs.length > 0 ? stalePRs : [
-    {
-      id: 1,
-      github_id: 12345,
-      repository_id: 1,
-      author_id: 1,
-      title: "Add new feature to dashboard",
-      number: 42,
-      state: "open",
-      html_url: "https://github.com/org/repo/pull/42",
-      created_at: "2023-03-15T10:00:00Z",
-      updated_at: "2023-03-20T15:30:00Z",
-      closed_at: null,
-      merged_at: null,
-      is_stale: true,
-      last_activity_at: "2023-03-20T15:30:00Z",
-      repository_name: "org/repo",
-      author_name: "developer1"
-    },
-    {
-      id: 2,
-      github_id: 12346,
-      repository_id: 1,
-      author_id: 2,
-      title: "Fix critical bug in authentication",
-      number: 43,
-      state: "open",
-      html_url: "https://github.com/org/repo/pull/43",
-      created_at: "2023-03-10T09:15:00Z",
-      updated_at: "2023-03-12T14:20:00Z",
-      closed_at: null,
-      merged_at: null,
-      is_stale: true,
-      last_activity_at: "2023-03-12T14:20:00Z",
-      repository_name: "org/repo",
-      author_name: "developer2"
-    },
-    {
-      id: 3,
-      github_id: 12347,
-      repository_id: 2,
-      author_id: 3,
-      title: "Implement new API endpoint for metrics",
-      number: 21,
-      state: "open",
-      html_url: "https://github.com/org/another-repo/pull/21",
-      created_at: "2023-02-28T11:45:00Z",
-      updated_at: "2023-03-05T09:10:00Z",
-      closed_at: null,
-      merged_at: null,
-      is_stale: true,
-      last_activity_at: "2023-03-05T09:10:00Z",
-      repository_name: "org/another-repo",
-      author_name: "developer3"
-    }
-  ];
-
   return (
     <div className="space-y-6">
       <div>
@@ -143,16 +85,16 @@ export default function StalePRsPage() {
         <p className="text-white-400">Pull requests with no activity in the last 7 days</p>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-stone-100 rounded-lg shadow overflow-hidden">
         <div className="p-6 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">
-              {mockStalePRs.length} Stale Pull Requests
+              {stalePRs.length} Stale Pull Requests
             </h2>
           </div>
         </div>
         
-        {mockStalePRs.length === 0 ? (
+        {stalePRs.length === 0 ? (
           <div className="text-center py-6 text-gray-500">
             No stale pull requests found
           </div>
@@ -182,7 +124,7 @@ export default function StalePRsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {mockStalePRs.map((pr) => (
+                {stalePRs.map((pr) => (
                   <tr key={pr.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center">

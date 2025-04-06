@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { api, PRMetrics } from '@/lib/api';
 import DashboardCard from '@/components/dashboard-card';
-import StalePRWidget from '@/components/stale-pr-widget';
+import StalePRsPage from '@/app/stale-prs/page';
 import ContributorsBarChart from '@/components/contributors-bar-chart';
 import ReviewersBarChart from '@/components/reviewers-bar-chart';
 import LoadingSpinner from '@/components/loading-spinner';
@@ -122,7 +122,7 @@ export default function Home() {
       <div className="bg-gray-800 rounded-lg shadow">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-gray-100 mb-4">Stale Pull Requests</h2>
-          <StalePRWidget />
+          <StalePRsPage />
         </div>
       </div>
     </div>
