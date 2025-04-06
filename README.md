@@ -1,6 +1,9 @@
-# PReQual - Pull Request Quality Manager
+ PReQual - Pull Request Quality Manager
 
-PReQual is a comprehensive GitHub pull request quality management system built for the **Pulumi "Get Creative with Pulumi and GitHub" Hackathon**. It helps teams monitor, analyze, and streamline their code review process while providing insights into team contributions and PR patterns.
+PReQual is a comprehensive GitHub pull request quality management system built for the **Pulumi "Get Creative with Pulumi and GitHub" Hackathon**. It helps teams monitor, analyze, and streamline their code review process while providing insights into team contributions and PR patterns. See the PReQal Application [here](https://prequel-3jjh15c8m-hps-projects-4515921f.vercel.app/) due to cloud cost, this demo didn't have any Azure resources. You  can see screenshots of the analytics dashboards below. Note* it's not mock data, it's my own GitHub account's data for testing, I created another GitHub account, added it to my organization, and used it. 
+
+
+![Screenshot 2025-04-06 015757](https://github.com/user-attachments/assets/88cfd304-ab19-444b-93aa-b02dbaaefecb)
 
 ## Features
 
@@ -16,7 +19,9 @@ PReQual is a comprehensive GitHub pull request quality management system built f
 
 ## System Architecture
 
-![System Architecture](docs/system-architecture.png)
+
+![Screenshot 2025-04-06 212153](https://github.com/user-attachments/assets/ce84e8a4-91e6-4bb2-b35b-48a9c38cec70)
+
 
 PReQual integrates several components into a cohesive system:
 
@@ -35,13 +40,13 @@ PReQual integrates several components into a cohesive system:
   - **Azure VM Deployment**: Full infrastructure with VM acting as webhook receiver
   - **Local-only Mode**: Run without Azure infrastructure for testing/personal use
 
-- **Azure VM as Webhook Endpoint**: We deploy an Azure VM to serve as the webhook endpoint for GitHub events because:
+- **Azure VM as Webhook Endpoint**: I deploy an Azure VM to serve as the webhook endpoint for GitHub events because:
   - It provides a stable, always-on service to receive webhook events
   - It can be secured and scaled according to organizational needs
   - It allows centralized processing of webhook events across repositories
   - It maintains a persistent database connection for analytics
 
-- **Configuration Management**: All tokens and credentials can be updated through the settings page in the UI after initial setup. The system automatically updates environment configurations, so you don't need to manually modify files if tokens expire.
+- **Configuration Management**: . The system automatically updates environment configurations, so you don't need to manually modify files if tokens expire If you want to update, go to the settings page and provide the token and URL.
 
 ## Prerequisites
 
@@ -184,6 +189,21 @@ prequel/
     │   └── utils/        # Utility functions
     └── index.ts          # Main Pulumi program
 ```
+
+
+![Screenshot 2025-04-06 143009](https://github.com/user-attachments/assets/5b88f452-f59c-456e-8b86-589e08a547e0)
+![Screenshot 2025-04-06 015644](https://github.com/user-attachments/assets/2466cc88-10f0-4990-8639-e5b2215fb48f)
+![Screenshot 2025-04-06 015657](https://github.com/user-attachments/assets/a8bd463c-d7e6-4997-95cb-52bb71de9d13)
+![Screenshot 2025-04-06 101000](https://github.com/user-attachments/assets/23cc57b8-14b1-4fd4-a4e7-697f4664e01f)
+![Screenshot 2025-04-06 101000](https://github.com/user-attachments/assets/3078e7b6-c491-4726-9607-674cf33996be)
+
+![Screenshot 2025-04-06 015514](https://github.com/user-attachments/assets/d36334cc-1319-4cd6-8c5c-4ec08a6c83ee)
+![Screenshot 2025-04-06 015420](https://github.com/user-attachments/assets/d35bba10-524d-480b-ab42-4e9eeaec1656)
+![Screenshot 2025-04-06 015300](https://github.com/user-attachments/assets/4b156c2f-5d3e-4741-9424-433f3c032172)
+![Screenshot 2025-04-06 014901](https://github.com/user-attachments/assets/5f0bc488-3459-4684-85d1-ea981dfca6bd)
+![Screenshot 2025-04-06 014844](https://github.com/user-attachments/assets/cc8fdae1-7152-4355-a6a4-9adef10cc657)
+![Screenshot 2025-04-06 015329](https://github.com/user-attachments/assets/9336c35e-6fc1-4759-bf6d-9c23d41ae90d)
+
 
 ## Hackathon Context
 
