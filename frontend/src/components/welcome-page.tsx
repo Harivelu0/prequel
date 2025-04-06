@@ -1,18 +1,13 @@
 'use client';
-
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 import { 
   ArrowRightIcon 
 } from '@heroicons/react/24/solid';
-import { 
-  CheckIcon,
-  ChevronRightIcon
-} from '@heroicons/react/24/outline';
 
-// Creating a custom icons for simplicity
+
+// Custom icons (preserved from original code)
 const PullRequestIcon = () => (
   <svg className="h-6 w-6 text-indigo-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M18 15C16.3431 15 15 16.3431 15 18C15 19.6569 16.3431 21 18 21C19.6569 21 21 19.6569 21 18C21 16.3431 19.6569 15 18 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -45,7 +40,27 @@ const BellIcon = () => (
 
 export default function WelcomePage() {
   // We start at intro screen
-  const [currentStep, setCurrentStep] = useState(0);
+  // const [currentStep, setCurrentStep] = useState(0);
+  const router = useRouter();
+  
+  // Function to enter demo mode
+  const enterDemoMode = () => {
+    // Set demo mode flag
+    localStorage.setItem('demoMode', 'true');
+    
+    // Set a pre-configured demo API URL - replace with your actual demo backend URL
+    localStorage.setItem('apiUrl', 'http://your-demo-backend-ip/api');
+    
+    // Mark onboarding as completed
+    localStorage.setItem('onboardingCompleted', 'true');
+    
+    // Dispatch setup completed event to trigger sidebar display
+    const setupCompletedEvent = new Event('setup-completed');
+    window.dispatchEvent(setupCompletedEvent);
+    
+    // Navigate to dashboard
+    router.push('/');
+  };
   
   return (
     <div className="flex flex-col h-screen bg-gray-900">
@@ -72,8 +87,19 @@ export default function WelcomePage() {
               Track Your GitHub Pull Requests
             </h1>
             <p className="mt-6 text-xl text-gray-300">
-              Get insights into your team's PR activity and stay on top of code reviews with timely notifications
+              Get insights into your team&apos;s PR activity and stay on top of code reviews with timely notifications
             </p>
+            
+            {/* Demo Mode Banner */}
+            <div className="mt-6">
+              <button 
+                onClick={enterDemoMode}
+                className="inline-flex items-center px-6 py-3 border border-indigo-400 text-indigo-300 font-medium rounded-md hover:bg-indigo-900/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <span className="px-2 py-1 bg-indigo-700 text-white rounded-md text-xs mr-3">DEMO</span>
+                View Demo Dashboard
+              </button>
+            </div>
           </div>
           
           {/* Features Grid */}
@@ -84,7 +110,7 @@ export default function WelcomePage() {
               </div>
               <h2 className="text-xl font-bold text-white mb-2">PR Tracking & Analytics</h2>
               <p className="text-gray-300">
-                Track all pull requests across your repositories. Monitor open PRs, reviews, and PR comments to gain insights into your team's code review process.
+                Track all pull requests across your repositories. Monitor open PRs, reviews, and PR comments to gain insights into your team&apos;s code review process.
               </p>
             </div>
             
@@ -104,7 +130,7 @@ export default function WelcomePage() {
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Contributor Insights</h2>
               <p className="text-gray-300">
-                Get metrics on your team's contribution patterns. See who's creating PRs, who's reviewing them, and identify collaboration patterns.
+                Get metrics on your team&apos;s contribution patterns. See who&apos;s creating PRs, who&apos;s reviewing them, and identify collaboration patterns.
               </p>
             </div>
             
@@ -114,7 +140,7 @@ export default function WelcomePage() {
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Slack Notifications</h2>
               <p className="text-gray-300">
-                Receive real-time Slack alerts for important PR events: new pull requests, requested changes, and stale PRs that need your team's attention.
+                Receive real-time Slack alerts for important PR events: new pull requests, requested changes, and stale PRs that need your team&apos;s attention.
               </p>
             </div>
           </div>
@@ -142,7 +168,7 @@ export default function WelcomePage() {
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-white">Create a GitHub Token</h3>
                   <p className="mt-1 text-gray-300">
-                    You'll need a GitHub personal access token (classic) with read permissions for your repositories, pull requests, and issues.
+                    You&apos;ll need a GitHub personal access token (classic) with read permissions for your repositories, pull requests, and issues.
                   </p>
                 </div>
               </div>
@@ -152,7 +178,7 @@ export default function WelcomePage() {
                   2
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-white">Set Up Slack Webhook (Optional)</h3>
+                  <h3 className="text-lg font-medium text-white">Set Up Slack Webhook</h3>
                   <p className="mt-1 text-gray-300">
                     Create a Slack incoming webhook to receive notifications about pull request activities.
                   </p>

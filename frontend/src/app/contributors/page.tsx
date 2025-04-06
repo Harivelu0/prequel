@@ -13,7 +13,7 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts';
-
+import Image from 'next/image'
 // Define interface for contributor data
 interface Contributor {
   id: number;
@@ -41,13 +41,13 @@ export default function ContributorsPage() {
           console.log('Fetching contributors data...');
           
           // Make a direct fetch call to diagnose the issue
-          const directResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://4.213.171.225'}/api/contributors`);
-          console.log('Direct fetch response status:', directResponse.status);
+          // const directResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`);
+          // console.log('Direct fetch response status:', directResponse.status);
           
-          if (directResponse.ok) {
-            const directData = await directResponse.json();
-            console.log('Direct fetch data:', directData);
-          }
+          // if (directResponse.ok) {
+          //   const directData = await directResponse.json();
+          //   console.log('Direct fetch data:', directData);
+          // }
           
           // Now try with the API client
           const data = await api.getContributors();
@@ -201,11 +201,13 @@ export default function ContributorsPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <img 
-                          className="h-10 w-10 rounded-full" 
-                          src={contributor.avatar_url} 
-                          alt={contributor.username} 
-                        />
+                      <Image
+                        className="h-10 w-10 rounded-full"
+                        src={contributor.avatar_url}
+                        alt={contributor.username}
+                        width={40}
+                        height={40}
+                         />
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-300">

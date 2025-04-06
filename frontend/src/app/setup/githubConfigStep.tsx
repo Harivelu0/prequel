@@ -105,7 +105,7 @@ const GithubConfigStep: React.FC<GithubConfigStepProps> = ({
             {enableSlackNotifications && (
               <div className="ml-8 p-3 bg-gray-800 rounded-md">
                 <p className="text-sm text-indigo-300 mb-2">
-                  You'll need to create a Slack webhook in the next step.
+                  You&apos;ll need to create a Slack webhook in the next step.
                 </p>
               </div>
             )}

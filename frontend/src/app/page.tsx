@@ -69,10 +69,10 @@ export default function Home() {
 
   // Use metrics if available, otherwise use mock data
   const dashboardMetrics: PRMetrics = metrics || {
-    pr_authors: [['user1', 12], ['user2', 8], ['user3', 6], ['user4', 5], ['user5', 4]],
-    active_reviewers: [['reviewer1', 15], ['reviewer2', 12], ['reviewer3', 9], ['reviewer4', 7], ['reviewer5', 5]],
-    comment_users: [['user2', 8], ['user1', 6], ['user4', 4]],
-    stale_pr_count: 3
+    pr_authors: [],
+    active_reviewers: [],
+    comment_users: [],
+    stale_pr_count: 0
   };
 
   return (
@@ -86,22 +86,20 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <DashboardCard
           title="Total Pull Requests"
-          value={dashboardMetrics.pr_authors.reduce((acc, [_, count]) => acc + count, 0)}
+          value={dashboardMetrics.pr_authors.reduce((acc, item) => acc + item[1], 0)}
           icon="pull-request"
-          trend={+5}
+
         />
         <DashboardCard
           title="Active Reviewers"
           value={dashboardMetrics.active_reviewers.length}
           icon="user"
-          trend={+2}
+
         />
         <DashboardCard
           title="Stale PRs"
           value={dashboardMetrics.stale_pr_count}
           icon="clock"
-          trend={-1}
-          trendDirection="down"
         />
       </div>
 

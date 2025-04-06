@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Define base URL for API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://4.213.171.225';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
 // Create axios instance
 const apiClient = axios.create({
@@ -159,7 +159,7 @@ export const api = {
     try {
       const response = await apiClient.get('/');
       return response.data;
-    } catch (error) {
+    } catch {
       console.warn('Backend API not available');
       return { status: 'error', timestamp: new Date().toISOString() };
     }
@@ -170,7 +170,7 @@ export const api = {
     try {
       const response = await apiClient.get('/api/metrics');
       return response.data;
-    } catch (error) {
+    } catch {
       console.warn('Error fetching PR metrics');
       return {
         pr_authors: [],
@@ -186,7 +186,7 @@ export const api = {
     try {
       const response = await apiClient.get('/api/stale-prs');
       return response.data;
-    } catch (error) {
+    } catch  {
       console.warn('Error fetching stale PRs');
       return [];
     }
@@ -197,7 +197,7 @@ export const api = {
     try {
       const response = await apiClient.get('/api/repositories');
       return response.data;
-    } catch (error) {
+    } catch {
       console.warn('Error fetching repositories');
       return [];
     }
@@ -248,7 +248,7 @@ getContributors: async (): Promise<Contributor[]> => {
     try {
       const response = await apiClient.get('/api/pull-requests');
       return response.data;
-    } catch (error) {
+    } catch  {
       console.warn('Error fetching pull requests');
       return [];
     }
@@ -277,7 +277,7 @@ getContributors: async (): Promise<Contributor[]> => {
         enableSlackNotifications: false,
         stalePrDays: 7
       };
-    } catch (error) {
+    } catch  {
       console.warn('Error fetching configuration');
       return {
         enableWorkflowMonitoring: false,
@@ -290,12 +290,13 @@ getContributors: async (): Promise<Contributor[]> => {
   // Save configuration (initial setup)
   saveConfiguration: async (config: Partial<Configuration>): Promise<{ success: boolean }> => {
     try {
-      const response = await apiClient.post('/api/config', {
+        await apiClient.post('/api/config', {
         githubToken: config.githubToken,
         organizationName: config.organizationName,
         slackWebhookUrl: config.slackWebhookUrl 
       });
-      return { success: true };
+      return {
+        success: true };
     } catch (error) {
       console.error('Error saving configuration:', error);
       return { success: false };
@@ -326,7 +327,7 @@ getContributors: async (): Promise<Contributor[]> => {
       const response = await apiClient.get('/api/stats');
       console.log('Dashboard stats response:', response.data);
       return response.data;
-    } catch (error) {
+    } catch(error) {
       console.warn('Error fetching dashboard stats:', error);
       return {
         pr_metrics: {
@@ -348,7 +349,7 @@ getContributors: async (): Promise<Contributor[]> => {
     try {
       const response = await apiClient.post('/api/auth/update-configuration', config);
       return response.data;
-    } catch (error) {
+    } catch {
       console.warn('Error updating configuration');
       return { success: false };
     }
@@ -359,7 +360,7 @@ getContributors: async (): Promise<Contributor[]> => {
     try {
       const response = await apiClient.get('/api/metrics/workflows');
       return response.data;
-    } catch (error) {
+    } catch  {
       console.warn('Error fetching workflow metrics');
       return {
         total_workflows: 0,
@@ -375,7 +376,7 @@ getContributors: async (): Promise<Contributor[]> => {
     try {
       const response = await apiClient.get('/api/workflow-runs');
       return response.data;
-    } catch (error) {
+    } catch  {
       console.warn('Error fetching workflow runs');
       return [];
     }
@@ -394,7 +395,7 @@ getContributors: async (): Promise<Contributor[]> => {
         rules
       });
       return response.data;
-    } catch (error) {
+    } catch {
       console.warn('Error setting up branch protection');
       return { success: false };
     }

@@ -10,7 +10,6 @@ import {
   XMarkIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
-import { ChevronRightIcon } from '@heroicons/react/24/solid';
 
 // Imported from your existing components
 const GithubTokenInstructions = ({ onClose }: { onClose: () => void }) => {
@@ -36,7 +35,7 @@ const GithubTokenInstructions = ({ onClose }: { onClose: () => void }) => {
       title: "Access Developer Settings",
       content: (
         <p className="mt-1 text-gray-300">
-          Scroll to the bottom of the sidebar and click on "Developer settings".
+          Scroll to the bottom of the sidebar and click on &quot;Developer settings&quot;.
         </p>
       )
     },
@@ -45,7 +44,7 @@ const GithubTokenInstructions = ({ onClose }: { onClose: () => void }) => {
       title: "Generate a Personal Access Token",
       content: (
         <p className="mt-1 text-gray-300">
-          Select "Personal access tokens" → "Tokens (classic)" → "Generate new token" → "Generate new token (classic)".
+          Select &quot;Personal access tokens&quot; → &quot;Tokens (classic)&quot; → &quot;Generate new token&quot; → &quot;Generate new token (classic)&quot;.
         </p>
       )
     },
@@ -70,7 +69,7 @@ const GithubTokenInstructions = ({ onClose }: { onClose: () => void }) => {
       title: "Generate and Copy Token",
       content: (
         <p className="mt-1 text-gray-300">
-          Click "Generate token" at the bottom of the page. <span className="text-red-300 font-medium">Make sure to copy your new token immediately</span> - you won't be able to see it again!
+          Click &quot;Generate token&quot; at the bottom of the page. <span className="text-red-300 font-medium">Make sure to copy your new token immediately</span> - you won&apos;t be able to see it again!
         </p>
       )
     }
@@ -161,7 +160,7 @@ const SlackWebhookInstructions = ({ onClose }: { onClose: () => void }) => {
       title: "Create an App",
       content: (
         <p className="mt-1 text-gray-300">
-          Click the "Create an App" button at the top right of the page.
+          Click the &quot;Create an App&quot; button at the top right of the page.
         </p>
       )
     },
@@ -170,7 +169,7 @@ const SlackWebhookInstructions = ({ onClose }: { onClose: () => void }) => {
       title: "Select 'From scratch'",
       content: (
         <p className="mt-1 text-gray-300">
-          In the modal dialog, choose "From scratch" to start with a blank app.
+          In the modal dialog, choose &quot;From scratch&quot; to start with a blank app.
         </p>
       )
     },
@@ -179,7 +178,7 @@ const SlackWebhookInstructions = ({ onClose }: { onClose: () => void }) => {
       title: "Name and select workspace",
       content: (
         <p className="mt-1 text-gray-300">
-          Enter an app name (like "PR Notifications") and select your workspace from the dropdown menu.
+          Enter an app name (like &quot;PR Notifications&quot;) and select your workspace from the dropdown menu.
         </p>
       )
     },
@@ -188,7 +187,7 @@ const SlackWebhookInstructions = ({ onClose }: { onClose: () => void }) => {
       title: "Configure Incoming Webhooks",
       content: (
         <p className="mt-1 text-gray-300">
-          From the left sidebar menu, find and click on "Incoming Webhooks".
+          From the left sidebar menu, find and click on &quot;Incoming Webhooks&quot;.
         </p>
       )
     },
@@ -197,7 +196,7 @@ const SlackWebhookInstructions = ({ onClose }: { onClose: () => void }) => {
       title: "Activate Webhooks",
       content: (
         <p className="mt-1 text-gray-300">
-          Toggle the switch to "On" to activate incoming webhooks for your app.
+          Toggle the switch to &quot;On&quot; to activate incoming webhooks for your app.
         </p>
       )
     },
@@ -206,7 +205,7 @@ const SlackWebhookInstructions = ({ onClose }: { onClose: () => void }) => {
       title: "Add webhook to workspace",
       content: (
         <p className="mt-1 text-gray-300">
-          Scroll down and click the "Add New Webhook to Workspace" button.
+          Scroll down and click the &quot;Add New Webhook to Workspace&quot; button.
         </p>
       )
     },
@@ -224,7 +223,7 @@ const SlackWebhookInstructions = ({ onClose }: { onClose: () => void }) => {
       title: "Allow and copy webhook URL",
       content: (
         <p className="mt-1 text-gray-300">
-          Click "Allow", then copy the webhook URL that appears and paste it below.
+          Click &quot;Allow&quot;, then copy the webhook URL that appears and paste it below.
         </p>
       )
     }
@@ -277,12 +276,22 @@ const SlackWebhookInstructions = ({ onClose }: { onClose: () => void }) => {
 };
 
 // Modal component
-const Modal = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
+const Modal = ({ isOpen, onClose, children }: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  children: React.ReactNode 
+}) => {
   if (!isOpen) return null;
   
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75">
-      <div className="bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75"
+      onClick={onClose} // Add this to close when clicking the backdrop
+    >
+      <div 
+        className="bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
+      >
         {children}
       </div>
     </div>
@@ -400,7 +409,7 @@ export default function SettingsPage() {
                 />
                 <div className="flex items-center justify-between mt-2">
                   <p className="text-gray-400 text-xs">
-                    Leave as is if you don't want to change your token.
+                    Leave as is if you don&apos;t want to change your token.
                   </p>
                   <button
                     type="button"
@@ -456,7 +465,7 @@ export default function SettingsPage() {
                     />
                     <div className="flex items-center justify-between mt-2">
                       <p className="text-gray-400 text-xs">
-                        Leave as is if you don't want to change your webhook URL.
+                        Leave as is if you don&apos;t want to change your webhook URL.
                       </p>
                       <button
                         type="button"

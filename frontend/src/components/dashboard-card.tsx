@@ -6,8 +6,6 @@ import {
   ClockIcon, 
   CodeBracketIcon, 
   UserGroupIcon, 
-  ArrowUpIcon,
-  ArrowDownIcon
 } from '@heroicons/react/24/outline';
 
 type IconType = 'chart' | 'clock' | 'pull-request' | 'user';

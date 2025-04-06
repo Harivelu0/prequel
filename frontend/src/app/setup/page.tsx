@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { api } from '@/lib/api';
 
 // Import modular components
@@ -11,7 +10,6 @@ import GithubConfigStep from './githubConfigStep';
 import SlackWebhookStep from './slackWebhookStep';
 
 export default function SetupPage() {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [githubToken, setGithubToken] = useState('');
   const [enableSlackNotifications, setEnableSlackNotifications] = useState(false);

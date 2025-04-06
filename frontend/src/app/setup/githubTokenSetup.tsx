@@ -32,7 +32,7 @@ const GithubTokenInstructions = ({ setCurrentStep }: { setCurrentStep: (step: nu
       title: "Access Developer Settings",
       content: (
         <p className="mt-1 text-gray-300">
-          Scroll to the bottom of the sidebar and click on "Developer settings".
+          Scroll to the bottom of the sidebar and click on &quot;Developer settings&quot;.
         </p>
       )
     },
@@ -41,7 +41,7 @@ const GithubTokenInstructions = ({ setCurrentStep }: { setCurrentStep: (step: nu
       title: "Generate a Personal Access Token",
       content: (
         <p className="mt-1 text-gray-300">
-          Select "Personal access tokens" → "Tokens (classic)" → "Generate new token" → "Generate new token (classic)".
+          Select &quot;Personal access tokens&quot; → &quot;Tokens (classic)&quot; → &quot;Generate new token&quot; → &quot;Generate new token (classic)&quot;.
         </p>
       )
     },
@@ -66,7 +66,7 @@ const GithubTokenInstructions = ({ setCurrentStep }: { setCurrentStep: (step: nu
       title: "Generate and Copy Token",
       content: (
         <p className="mt-1 text-gray-300">
-          Click "Generate token" at the bottom of the page. <span className="text-red-300 font-medium">Make sure to copy your new token immediately</span> - you won't be able to see it again!
+          Click &quot;Generate token&quot; at the bottom of the page. <span className="text-red-300 font-medium">Make sure to copy your new token immediately</span> - you won&apos;t be able to see it again!
         </p>
       )
     }

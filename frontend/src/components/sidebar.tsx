@@ -8,8 +8,7 @@ import {
   CodeBracketIcon,
   UserGroupIcon,
   CogIcon,
-  ShieldCheckIcon,
-  CircleStackIcon
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 
 // Update your existing sidebar navItems array:

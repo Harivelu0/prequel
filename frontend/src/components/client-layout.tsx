@@ -11,14 +11,22 @@ export default function ClientLayout({
 }) {
   const router = useRouter();
   const [showSidebar, setShowSidebar] = useState(false);
-  
+  const [isClient, setIsClient] = useState(false);
+
   useEffect(() => {
+    // Ensure this only runs on the client
+    setIsClient(true);
+
     // Check if user has completed onboarding
-    const hasCompletedOnboarding = localStorage.getItem('onboardingCompleted') === 'true';
+    const hasCompletedOnboarding = 
+      typeof window !== 'undefined' && 
+      localStorage.getItem('onboardingCompleted') === 'true';
+    
     setShowSidebar(hasCompletedOnboarding);
 
     // Handle setup completion event
     const handleSetupCompleted = () => {
+      localStorage.setItem('onboardingCompleted', 'true');
       setShowSidebar(true);
       router.push('/');
     };
@@ -31,6 +39,11 @@ export default function ClientLayout({
       window.removeEventListener('setup-completed', handleSetupCompleted);
     };
   }, [router]);
+
+  // Prevent rendering on server
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen bg-gray-900">

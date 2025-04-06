@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   ArrowLeftIcon,
   CheckIcon,
@@ -126,7 +125,7 @@ export const SetupSuccess = () => {
 // Example Setup Page Component (you would replace this with your actual setup logic)
 export const SetupPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   // Example steps - replace with your actual setup steps
   const renderStep = () => {

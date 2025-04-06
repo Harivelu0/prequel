@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { api, BranchProtectionRules } from '@/lib/api';
+import { api } from '@/lib/api';
 import LoadingSpinner from '@/components/loading-spinner';
 
 export default function BranchProtectionPage() {
@@ -12,21 +12,8 @@ export default function BranchProtectionPage() {
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [createSuccess, setCreateSuccess] = useState(false);
-  
-  // For branch protection
-  const [repository, setRepository] = useState('');
-  const [branch, setBranch] = useState('main');
-  const [requirePullRequest, setRequirePullRequest] = useState(true);
-  const [requiredReviewers, setRequiredReviewers] = useState(1);
-  const [dismissStaleReviews, setDismissStaleReviews] = useState(true);
-  const [requireCodeOwners, setRequireCodeOwners] = useState(false);
-  
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  
 
-  // Handle repository creation
+  
 // Handle repository creation
 const handleCreateRepo = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -159,7 +146,7 @@ const handleCreateRepo = async (e: React.FormEvent) => {
               className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50"
               disabled={createLoading}
             >
-              {createLoading ? <span><LoadingSpinner className="w-4 h-4 mr-2" /> Creating...</span> : 'Create Repository'}
+              {createLoading ? <span><LoadingSpinner  /> Creating...</span> : 'Create Repository'}
             </button>
           </div>
         </form>

@@ -6,21 +6,6 @@ import { formatDistanceToNow } from 'date-fns';
 import LoadingSpinner from '@/components/loading-spinner';
 
 // Define interfaces for our data models
-interface Repository {
-  id: number;
-  github_id: number;
-  name: string;
-  full_name: string;
-  created_at: string;
-}
-
-interface User {
-  id: number;
-  github_id: number;
-  username: string;
-  avatar_url: string;
-  created_at: string;
-}
 
 interface PullRequest {
   id: number;

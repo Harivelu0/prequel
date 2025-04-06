@@ -25,8 +25,6 @@ const SlackWebhookStep: React.FC<SlackWebhookStepProps> = ({
   setCurrentStep,
   slackWebhookUrl,
   setSlackWebhookUrl,
-  stalePrDays,
-  setStalePrDays,
   handleSlackSetupSubmit,
   loading,
   error
@@ -62,7 +60,7 @@ const SlackWebhookStep: React.FC<SlackWebhookStepProps> = ({
       title: "Create an App",
       content: (
         <p className="mt-1 text-gray-300">
-          Click the "Create an App" button at the top right of the page.
+          Click the &apos;Create an App&apos; button at the top right of the page.
         </p>
       )
     },
@@ -71,7 +69,7 @@ const SlackWebhookStep: React.FC<SlackWebhookStepProps> = ({
       title: "Select 'From scratch'",
       content: (
         <p className="mt-1 text-gray-300">
-          In the modal dialog, choose "From scratch" to start with a blank app.
+          In the modal dialog, choose &apos;From scratch&apos; to start with a blank app.
         </p>
       )
     },
@@ -80,7 +78,7 @@ const SlackWebhookStep: React.FC<SlackWebhookStepProps> = ({
       title: "Name and select workspace",
       content: (
         <p className="mt-1 text-gray-300">
-          Enter an app name (like "PR Notifications") and select your workspace from the dropdown menu.
+          Enter an app name (like &apos;PR Notifications&apos;) and select your workspace from the dropdown menu.
         </p>
       )
     },
@@ -89,7 +87,7 @@ const SlackWebhookStep: React.FC<SlackWebhookStepProps> = ({
       title: "Configure Incoming Webhooks",
       content: (
         <p className="mt-1 text-gray-300">
-          From the left sidebar menu, find and click on "Incoming Webhooks".
+          From the left sidebar menu, find and click on &apos;Incoming Webhooks&apos;.
         </p>
       )
     },
@@ -98,7 +96,7 @@ const SlackWebhookStep: React.FC<SlackWebhookStepProps> = ({
       title: "Activate Webhooks",
       content: (
         <p className="mt-1 text-gray-300">
-          Toggle the switch to "On" to activate incoming webhooks for your app.
+          Toggle the switch to &apos;On&apos; to activate incoming webhooks for your app.
         </p>
       )
     },
@@ -107,7 +105,7 @@ const SlackWebhookStep: React.FC<SlackWebhookStepProps> = ({
       title: "Add webhook to workspace",
       content: (
         <p className="mt-1 text-gray-300">
-          Scroll down and click the "Add New Webhook to Workspace" button.
+          Scroll down and click the &apos;Add New Webhook to Workspace&apos; button.
         </p>
       )
     },
@@ -125,7 +123,7 @@ const SlackWebhookStep: React.FC<SlackWebhookStepProps> = ({
       title: "Allow and copy webhook URL",
       content: (
         <p className="mt-1 text-gray-300">
-          Click "Allow", then copy the webhook URL that appears and paste it below.
+          Click &apos;Allow&apos;, then copy the webhook URL that appears and paste it below.
         </p>
       )
     }
@@ -197,7 +195,7 @@ const SlackWebhookStep: React.FC<SlackWebhookStepProps> = ({
             </div>
             
             <div className="bg-gray-700/30 p-4 rounded-lg">
-              <h3 className="text-lg font-medium text-white mb-2">You'll receive notifications for:</h3>
+              <h3 className="text-lg font-medium text-white mb-2">You&apos;ll receive notifications for:</h3>
               <ul className="space-y-2 text-gray-300">
                 {notificationTypes.map((item, index) => (
                   <li key={index} className="flex items-start">

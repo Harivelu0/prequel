@@ -23,49 +23,6 @@ export default function RepositoriesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Define mock data that will be used as fallback
-  const mockRepositories: Repository[] = [
-    {
-      id: 1,
-      name: 'api-service',
-      full_name: 'organization/api-service',
-      pr_count: 24,
-      review_count: 48,
-      stale_pr_count: 2,
-      contributor_count: 5,
-      last_activity: '2023-04-01T14:30:00Z'
-    },
-    {
-      id: 2,
-      name: 'frontend',
-      full_name: 'organization/frontend',
-      pr_count: 36,
-      review_count: 72,
-      stale_pr_count: 1,
-      contributor_count: 8,
-      last_activity: '2023-04-02T10:15:00Z'
-    },
-    {
-      id: 3,
-      name: 'core-lib',
-      full_name: 'organization/core-lib',
-      pr_count: 18,
-      review_count: 32,
-      stale_pr_count: 0,
-      contributor_count: 3,
-      last_activity: '2023-03-30T16:45:00Z'
-    },
-    {
-      id: 4,
-      name: 'docs',
-      full_name: 'organization/docs',
-      pr_count: 12,
-      review_count: 20,
-      stale_pr_count: 0,
-      contributor_count: 6,
-      last_activity: '2023-03-28T09:20:00Z'
-    }
-  ];
 
   useEffect(() => {
     const fetchRepositories = async () => {
@@ -77,13 +34,11 @@ export default function RepositoriesPage() {
           if (data && data.length > 0) {
             setRepos(data);
           } else {
-            // If API returns empty data, use mock data
-            setRepos(mockRepositories);
+            console.warn('Error fetching from API' );
           }
         } catch (apiError) {
-          console.warn('Error fetching from API, using mock data', apiError);
-          // On API error, use mock data
-          setRepos(mockRepositories);
+          console.warn('Error fetching from API', apiError);
+          
         }
         setLoading(false);
       } catch (err) {
