@@ -1,6 +1,27 @@
 # PReQual - Pull Request Quality Manager
 
-PReQual is a comprehensive GitHub pull request quality management system built for the **Pulumi "Get Creative with Pulumi and GitHub" Hackathon**. It helps teams monitor, analyze, and streamline their code review process while providing insights into team contributions and PR patterns. See the PReQual Application [here](https://prequel-3jjh15c8m-hps-projects-4515921f.vercel.app/) due to cloud cost, this demo didn't have any Azure resources. You can see screenshots of the analytics dashboards below. Note* it's not mock data, it's my own GitHub account's data for testing, I created another GitHub account, added it to my organization, and used it. 
+## 🚀 Streamlining Code Reviews with Infrastructure as Code
+
+PReQual transforms how development teams manage pull requests by combining GitHub workflow analytics with infrastructure-as-code automation. Built for the **Pulumi "Get Creative with GitHub" Hackathon**, this project demonstrates how Pulumi's GitHub provider and Automation API can create powerful DevOps solutions that go beyond traditional infrastructure management.
+
+### Recognize, Reward, and Improve
+
+At the heart of PReQual is a **contributor recognition system** that identifies and rewards team members based on their PR activities. By tracking who creates the most valuable PRs, who actively reviews code, and who provides constructive feedback, PReQual helps teams:
+
+- Recognize top contributors with data-driven insights
+- Balance review responsibilities across team members
+- Identify mentorship opportunities between experienced and newer developers
+- Create a culture of quality through gamified contribution metrics
+
+PReQual addresses the common challenges teams face with PR workflows:
+- PR reviews that fall through the cracks
+- Uneven distribution of review responsibilities
+- Lack of visibility into contribution patterns
+- Inconsistent repository configurations
+
+By leveraging Pulumi to programmatically manage GitHub repositories and analyze PR workflows, PReQual provides real-time dashboards, automated notifications, standardized repository configurations, and meaningful contribution metrics—all deployed through infrastructure as code.
+
+See the [live demo](https://prequel-3jjh15c8m-hps-projects-4515921f.vercel.app/) (Note: Due to cloud costs, this demo operates without Azure resources, but fully demonstrates the UI and workflow). The screenshots below showcase actual GitHub data collected from test repositories in my organization.
 
 ![Screenshot 2025-04-06 015757](https://github.com/user-attachments/assets/88cfd304-ab19-444b-93aa-b02dbaaefecb)
 
@@ -209,7 +230,7 @@ A background task runs daily to:
 ### Branch Protection
 
 When creating repositories, PReQual automatically configures branch protection rules:
-1. Requires a minimum number of approving reviews
+1. Requires a minimum number of approving reviews for now its 1
 2. Prevents force pushes to the main branch
 3. Requires conversation resolution before merging
 
