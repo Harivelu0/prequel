@@ -154,6 +154,7 @@ az account set --subscription $AZURE_SUBSCRIPTION_ID
 1. **Start the backend**
    ```bash
    cd backend
+   source venv/bin/activate
    python -m prequel_app.app
    ```
 
