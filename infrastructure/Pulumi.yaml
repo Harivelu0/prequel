@@ -1,0 +1,3 @@
+name: prequel
+runtime: nodejs
+description: PR Quality monitoring system using Pulumi and GitHub
